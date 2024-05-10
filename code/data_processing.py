@@ -36,18 +36,18 @@ def _map_numeric_to_month(month_numeric: int) -> str:
     return "Invalid Month"
 
 
-def _is_input_data_mat_file(path: str) -> bool:
+def _is_input_data_mat_file(file_path: str) -> bool:
     """
     Check if the file is the Input_data.mat file
 
     Parameters
-    - path: The path of the file
+    - file_path: The path of the file
 
     Returns
     - True if the file is the Input_data.mat file, False otherwise
     """
 
-    return os.path.basename(path) == "Input_data.mat"
+    return os.path.basename(file_path) == "Input_data.mat"
 
 
 def add_year_column(df: pd.DataFrame, file_path: str) -> pd.DataFrame:
@@ -184,6 +184,7 @@ def process_mat_file(file_path: str) -> pd.DataFrame:
         all_realizations_df = pd.concat(
             [all_realizations_df, transform_dates(df, file_path)], ignore_index=True
         )
+
         all_realizations_df["Simulation"] = (
             all_realizations_df.index // (30 * 365)
         ) + 1
