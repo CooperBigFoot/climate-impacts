@@ -47,7 +47,7 @@ class ClimateExtreme:
         return c, loc, scale
 
     def plot_hist_vs_genextreme(
-        self, column: str, units: str, c: float, loc: float, scale: float
+        self, column: str, units: str, c: float, loc: float, scale: float, output_destination: str = None
     ) -> None:
         """
         Plot the histogram of the data against the Generalized Extreme Value distribution.
@@ -58,6 +58,7 @@ class ClimateExtreme:
         - c (float): The shape parameter of the distribution.
         - loc (float): The location parameter of the distribution.
         - scale (float): The scale parameter of the distribution.
+        - output_destination (str): File path to save the figure. If None, the plot will be displayed instead of saving.
         """
         if self.extreme is None:
             raise ValueError(
@@ -85,6 +86,10 @@ class ClimateExtreme:
         plt.xlabel(column + f" ({units})")
         plt.ylabel("Density")
         plt.legend()
+
+        if output_destination:
+            plt.savefig(output_destination, bbox_inches="tight", dpi=300)
+
         plt.show()
 
     @staticmethod

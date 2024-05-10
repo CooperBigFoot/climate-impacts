@@ -99,7 +99,7 @@ def plot_wet_days(
     plt.legend(["Observed", "Median Simulated"])
     plt.ylabel("Number of Wet Days")
     if output_destination:
-        plt.savefig(output_destination)
+        plt.savefig(output_destination, bbox_inches="tight", dpi=300)
     else:
         plt.show()
 
@@ -132,7 +132,7 @@ def plot_ECDF(
     plt.xlabel(xlabel)
     plt.grid(linestyle="-", alpha=0.2, color="black")
     if output_destination:
-        plt.savefig(output_destination)
+        plt.savefig(output_destination, bbox_inches="tight", dpi=300)
     else:
         plt.show()
 
@@ -193,6 +193,6 @@ def plot_mean_and_std(
     plt.xlabel("")
     plt.grid(linestyle="-", alpha=0.2, color="black")
     if output_destination:
-        plt.savefig(output_destination)
+        plt.savefig(output_destination, bbox_inches="tight", dpi=300)
     else:
         plt.show()
