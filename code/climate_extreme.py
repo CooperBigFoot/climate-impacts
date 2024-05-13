@@ -9,10 +9,15 @@ import seaborn as sns
 @dataclass
 class ClimateExtreme:
     """
-    A class to calculate climate statistics.
+    A class to fit data extremes to a extreme value distributions.
 
     Available distributions:
-    - genextreme
+    - Generalized Extreme Value (genextreme)
+
+    Methods to add another distribution:
+    1. Import the required distribution from scipy.stats or another library.
+    2. Define a new method for fitting the distribution.
+    3. Store the fit results in `self.fit_results`.
     """
 
     data: pd.DataFrame
