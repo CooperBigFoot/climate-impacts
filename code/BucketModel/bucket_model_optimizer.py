@@ -2,8 +2,8 @@ import pandas as pd
 from scipy.optimize import minimize, basinhopping
 import numpy as np
 from dataclasses import dataclass, field
-from bucket_model import BucketModel
-from metrics import nse, log_nse, mae, kge, pbias, rmse
+from .bucket_model import BucketModel
+from .metrics import nse, log_nse, mae, kge, pbias, rmse
 from concurrent.futures import ThreadPoolExecutor
 from typing import Union
 import matplotlib.pyplot as plt
