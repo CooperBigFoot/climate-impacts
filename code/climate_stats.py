@@ -95,9 +95,13 @@ def plot_wet_days(
     sns.boxplot(
         data=obs_grouped, x="Month", y="is_wet", color=COLOR_OBSERVED, showfliers=False
     )
-    sns.lineplot(data=sim_median, color=COLOR_SIMULATED, marker="o")
-    plt.legend(["Observed", "Median Simulated"])
+    sns.lineplot(data=sim_median, color=COLOR_SIMULATED, marker="o", label="Median Simulated")
+    sns.despine()
+    legend_elements = [plt.Line2D([0], [0], color=COLOR_OBSERVED, lw=5, label='Observed'),
+                       plt.Line2D([0], [0], color=COLOR_SIMULATED, lw=1.5, label='Median Simulated')]
+    plt.legend(handles=legend_elements)
     plt.ylabel("Number of Wet Days")
+    plt.xlabel("")
     if output_destination:
         plt.savefig(output_destination, bbox_inches="tight", dpi=300)
     else:
@@ -131,6 +135,7 @@ def plot_ECDF(
     plt.ylabel("Cumulative Probability")
     plt.xlabel(xlabel)
     plt.grid(linestyle="-", alpha=0.2, color="black")
+    sns.despine()
     if output_destination:
         plt.savefig(output_destination, bbox_inches="tight", dpi=300)
     else:
@@ -192,6 +197,7 @@ def plot_mean_and_std(
     plt.ylabel("Temperature (°C)")
     plt.xlabel("")
     plt.grid(linestyle="-", alpha=0.2, color="black")
+    sns.despine()
     if output_destination:
         plt.savefig(output_destination, bbox_inches="tight", dpi=300)
     else:

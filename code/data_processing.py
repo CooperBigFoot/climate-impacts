@@ -84,13 +84,19 @@ def add_date_column(df: pd.DataFrame) -> pd.DataFrame:
 
 def handle_leap_years(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Handle leap years in the Date column of the DataFrame
+    Adjust dates in the DataFrame for leap years to align dates from March 1st onwards with non-leap years.
+    
+    This function identifies all leap years within the DataFrame's 'Date' column. For each leap year identified, 
+    it shifts all dates from March 1st and onwards by one day forward.
 
-    Parameters
-    - df: The DataFrame to transform
+    Parameters:
+    - df (pd.DataFrame): DataFrame containing a 'Date' column in datetime format.
 
-    Returns
-    - The DataFrame with leap years handled
+    Returns:
+    - pd.DataFrame: Modified DataFrame with adjusted dates for leap years.
+
+    Note:
+    - Only adjusts dates from March 1st onwards in leap years, earlier dates in leap years are not affected.
     """
     leap_years = df["Date"].dt.year[df["Date"].dt.is_leap_year].unique()
     for year in leap_years:

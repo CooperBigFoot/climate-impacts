@@ -67,6 +67,7 @@ class ClimateExtreme:
 
         bins = int(np.sqrt(len(self.extreme)))
 
+        plt.figure(figsize=(6, 6))
         plt.hist(
             self.extreme,
             bins=bins,
