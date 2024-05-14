@@ -18,6 +18,7 @@ class ClimateExtreme:
     1. Import the required distribution from scipy.stats or another library.
     2. Define a new method for fitting the distribution.
     3. Store the fit results in `self.fit_results`.
+    4. OPTIONAL: Create a method to plot the data against the fitted distribution.
     """
 
     data: pd.DataFrame
@@ -54,7 +55,7 @@ class ClimateExtreme:
     def plot_hist_vs_genextreme(
         self, column: str, units: str, c: float, loc: float, scale: float, output_destination: str = None
     ) -> None:
-        """
+        """ 
         Plot the histogram of the data against the Generalized Extreme Value distribution.
 
         Parameters:
