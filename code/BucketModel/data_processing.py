@@ -26,20 +26,20 @@ def preprocess_data(processed_mat_df: pd.DataFrame) -> pd.DataFrame | None:
         "Dec": 12,
     }
 
-    if "Simulations" in processed_mat_df.columns:
+    if "Simulation" in processed_mat_df.columns:
         print(
-            "Simulations column detected. This function is not designed to handle simulations data. \n Consider looping through the simulations and using this function on each simulation."
+            "Simulations column detected. This function is not designed to handle simulations data. \nConsider looping through the simulations and using this function on each simulation."
         )
         return None
     df = processed_mat_df.copy()
 
-    df['Month'] = df['Month'].map(months)
+    df["Month"] = df["Month"].map(months)
     df["date"] = pd.to_datetime(df[["Year", "Month", "Day"]])
     df = df.set_index("date")
 
     df["P_mix"] = df["Precipitation"]
 
-    keep_columns = [ "P_mix", "T_max", "T_min"]
+    keep_columns = ["P_mix", "T_max", "T_min"]
     df = df[keep_columns]
 
     return df
