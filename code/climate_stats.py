@@ -202,3 +202,4 @@ def plot_mean_and_std(
         plt.savefig(output_destination, bbox_inches="tight", dpi=300)
     else:
         plt.show()
+

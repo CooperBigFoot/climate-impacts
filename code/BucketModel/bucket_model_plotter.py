@@ -1,7 +1,6 @@
 import seaborn as sns  # For styling the plots
 import matplotlib.pyplot as plt  # For plotting
-
-from scipy.stats import gaussian_kde  # For the density plot
+import scipy.stats as stats  # For the confidence interval
 import numpy as np  # For the density plot
 
 import pandas as pd  # For the data handling
@@ -393,3 +392,73 @@ def plot_timeseries(
         fig.savefig(output_destination, dpi=300, bbox_inches="tight")
 
 
+def group_by_month_with_ci(
+    results_df: pd.DataFrame, n_simulations: int = 50
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Calculate the mean and 95% confidence interval of the monthly data.
+
+    Parameters:
+    - results_df (pd.DataFrame): The results from running the BucketModel for multiple simulations.
+    - n_simulations (int): The number of simulations in the generated ensemble, default is 50.
+
+    Returns:
+    - monthly_mean (pd.DataFrame): The mean of the monthly data.
+    - ci (pd.DataFrame): The 95% confidence interval of the monthly data.
+    """
+
+    results_df = results_df.copy()
+    results_df["month"] = results_df.index.month
+    results_df["year"] = results_df.index.year
+
+    monthly_data = (
+        results_df.groupby(["Simulation", "year", "month"]).sum().reset_index()
+    )
+
+    monthly_mean = monthly_data.groupby("month").mean()
+
+    monthly_std = monthly_data.groupby("month").std()
+
+    ci = stats.t.ppf(0.975, n_simulations - 1) * (monthly_std / np.sqrt(n_simulations))
+
+    return monthly_mean, ci
+
+
+def plot_monthly_runoff_with_ci(
+    results_monthly: pd.DataFrame, ci: pd.DataFrame, output_destination: str = ""
+):
+    """
+    Plots mean monthly total runoff with 95% confidence interval and saves the plot.
+
+    Parameters:
+        results_monthly (pd.DataFrame): DataFrame containing the monthly results with mean values.
+        ci (pd.DataFrame): DataFrame containing the confidence intervals for each month.
+        output_destination (str): File path to save the plot.
+    """
+    results_monthly["total_runoff"] = results_monthly["Q_s"] + results_monthly["Q_gw"]
+    ci_total_runoff = ci["Q_s"] + ci["Q_gw"]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(
+        results_monthly.index,
+        results_monthly["total_runoff"],
+        label="Total Runoff [mm/day]",
+        color="b",
+    )
+    plt.fill_between(
+        results_monthly.index,
+        results_monthly["total_runoff"] - ci_total_runoff,
+        results_monthly["total_runoff"] + ci_total_runoff,
+        color="b",
+        alpha=0.2,
+        label="95% CI",
+    )
+    plt.xlabel("Month")
+    plt.ylabel("Runoff [mm/day]")
+    plt.title("Mean Monthly Total Runoff with 95% Confidence Interval")
+    plt.legend()
+    sns.despine()
+    plt.grid(linestyle="-", alpha=0.7)
+
+    if output_destination:
+        plt.savefig(output_destination, bbox_inches="tight", dpi=300)
+    plt.show()
