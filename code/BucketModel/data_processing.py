@@ -1,14 +1,14 @@
 import pandas as pd
 
 
-def preprocess_data(processed_mat_df: pd.DataFrame) -> pd.DataFrame | None:
+def preprocess_data(processed_mat_df: pd.DataFrame) -> pd.DataFrame:
     """This function processes the DataFrame from the processed_mat_file function to a format that can be used for the BucketModel.
 
     Parameters:
     - processed_mat_df (pd.DataFrame): The DataFrame containing the data from the processed_mat_file function.
 
     Returns:
-    - pd.DataFrame | None: A DataFrame containing the data in a format that can be used for the BucketModel. If the DataFrame contains the "Simulations" column, the function will return None.
+    - pd.DataFrame | None: A DataFrame containing the data in a format that can be used for the BucketModel. 
     """
 
     months = {
@@ -25,12 +25,6 @@ def preprocess_data(processed_mat_df: pd.DataFrame) -> pd.DataFrame | None:
         "Nov": 11,
         "Dec": 12,
     }
-
-    if "Simulation" in processed_mat_df.columns:
-        print(
-            "Simulations column detected. This function is not designed to handle simulations data. \nConsider looping through the simulations and using this function on each simulation."
-        )
-        return None
     df = processed_mat_df.copy()
 
     df["Month"] = df["Month"].map(months)
@@ -40,6 +34,10 @@ def preprocess_data(processed_mat_df: pd.DataFrame) -> pd.DataFrame | None:
     df["P_mix"] = df["Precipitation"]
 
     keep_columns = ["P_mix", "T_max", "T_min"]
+
+    if "Simulation" in df.columns:
+        keep_columns.append("Simulation")
+
     df = df[keep_columns]
 
     return df
