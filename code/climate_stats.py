@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import scipy.stats as stats
 
 COLOR_OBSERVED = "#189AB4"
 COLOR_SIMULATED = "r"
@@ -95,10 +96,14 @@ def plot_wet_days(
     sns.boxplot(
         data=obs_grouped, x="Month", y="is_wet", color=COLOR_OBSERVED, showfliers=False
     )
-    sns.lineplot(data=sim_median, color=COLOR_SIMULATED, marker="o", label="Median Simulated")
+    sns.lineplot(
+        data=sim_median, color=COLOR_SIMULATED, marker="o", label="Median Simulated"
+    )
     sns.despine()
-    legend_elements = [plt.Line2D([0], [0], color=COLOR_OBSERVED, lw=5, label='Observed'),
-                       plt.Line2D([0], [0], color=COLOR_SIMULATED, lw=1.5, label='Median Simulated')]
+    legend_elements = [
+        plt.Line2D([0], [0], color=COLOR_OBSERVED, lw=5, label="Observed"),
+        plt.Line2D([0], [0], color=COLOR_SIMULATED, lw=1.5, label="Median Simulated"),
+    ]
     plt.legend(handles=legend_elements)
     plt.ylabel("Number of Wet Days")
     plt.xlabel("")
@@ -203,3 +208,54 @@ def plot_mean_and_std(
     else:
         plt.show()
 
+
+def plot_ddf(data: pd.DataFrame) -> None:
+    """Plot the Depth-Duration-Frequency curve.
+
+    Parameters:
+    - data (pd.DataFrame): The input dataframe.
+
+    Returns:
+    - None
+    """
+
+    durations = [1, 3, 7]
+
+    ams = {
+        duration: data["P_mix"].rolling(window=duration).sum().resample("Y").max()
+        for duration in durations
+    }
+
+    def fit_gumbel(data):
+        params = stats.gumbel_r.fit(data)
+        return params
+
+    # Fit Gumbel distribution to each duration. Explore other distributions too
+    params = {duration: fit_gumbel(ams[duration].dropna()) for duration in durations}
+
+    return_periods = [2, 5, 10, 25, 50, 100]
+    quantiles = {
+        duration: {
+            rp: stats.gumbel_r.ppf(1 - 1 / rp, *params[duration])
+            for rp in return_periods
+        }
+        for duration in durations
+    }
+
+    plt.figure(figsize=(10, 6))
+
+    for duration in durations:
+        plt.plot(
+            return_periods,
+            [quantiles[duration][rp] for rp in return_periods],
+            marker="o",
+            label=f"{duration}-day duration",
+        )
+
+    plt.xlabel("Return Period (years)")
+    plt.ylabel("Precipitation Depth (mm)")
+    plt.title("Depth-Duration-Frequency Curve")
+    plt.legend()
+    plt.grid(linestyle="-", alpha=0.2, color="black")
+    sns.despine()
+    plt.show()
