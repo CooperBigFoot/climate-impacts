@@ -219,8 +219,9 @@ def plot_ddf(data: pd.DataFrame) -> None:
     - None
     """
 
-    durations = [1, 3, 7]
+    durations = [1, 2, 3, 4, 5, 6, 7]
 
+    # Compute AMS for each duration
     ams = {
         duration: data["P_mix"].rolling(window=duration).sum().resample("Y").max()
         for duration in durations
@@ -230,10 +231,13 @@ def plot_ddf(data: pd.DataFrame) -> None:
         params = stats.gumbel_r.fit(data)
         return params
 
-    # Fit Gumbel distribution to each duration. Explore other distributions too
+    # Fit Gumbel distribution to each duration
     params = {duration: fit_gumbel(ams[duration].dropna()) for duration in durations}
 
-    return_periods = [2, 5, 10, 25, 50, 100]
+    # Define return periods
+    return_periods = [5, 10, 30, 60]
+
+    # Compute quantiles for each return period and duration
     quantiles = {
         duration: {
             rp: stats.gumbel_r.ppf(1 - 1 / rp, *params[duration])
@@ -242,17 +246,19 @@ def plot_ddf(data: pd.DataFrame) -> None:
         for duration in durations
     }
 
+    # Plotting the DDF curve with duration on x-axis and depth on y-axis for different return periods
     plt.figure(figsize=(10, 6))
 
-    for duration in durations:
+    for rp in return_periods:
+        depths = [quantiles[duration][rp] for duration in durations]
         plt.plot(
-            return_periods,
-            [quantiles[duration][rp] for rp in return_periods],
+            durations,
+            depths,
             marker="o",
-            label=f"{duration}-day duration",
+            label=f"{rp}-year return period",
         )
 
-    plt.xlabel("Return Period (years)")
+    plt.xlabel("Duration (days)")
     plt.ylabel("Precipitation Depth (mm)")
     plt.title("Depth-Duration-Frequency Curve")
     plt.legend()
