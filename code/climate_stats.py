@@ -221,7 +221,7 @@ def plot_ddf(data: pd.DataFrame) -> None:
 
     durations = [1, 2, 3, 4, 5, 6, 7]
 
-    # Compute AMS for each duration
+    # Compute the Annual Maximum Series (AMS) for each duration
     ams = {
         duration: data["P_mix"].rolling(window=duration).sum().resample("Y").max()
         for duration in durations
