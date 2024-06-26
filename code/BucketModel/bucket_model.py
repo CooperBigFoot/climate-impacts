@@ -7,32 +7,32 @@ import copy
 @dataclass
 class BucketModel:
     """
-    A class to simulate hydrological processes using a simple bucket model.
+    A class to simulate hydrological processes using a simple bucket model. These processes include: Evapotranspiration, Surface Runoff, Groundwater Runoff, Snow Accumulation, Soil Storage, Groundwater Storage, Snow Mel, Rainfall and Snowfall.
 
     Parameters:
-    - k: Degree-day snowmelt parameter (float).
-    - S_max: Maximum soil water storage (float).
-    - fr: Fraction of impermeable area at soil saturation (float).
-    - rg: Mean residence time of water in groundwater (float).
-    - gauge_adj: Parameter to adjust for undercatch by rain gauge (fractional value, float).
+    - k: Degree-day snowmelt parameter (float). [mm/°C/day]
+    - S_max: Maximum soil water storage (float). [mm]
+    - fr: Fraction of impermeable area at soil saturation (float). [fractional value]
+    - rg: Mean residence time of water in groundwater (float). [days]
+    - gauge_adj: Parameter to adjust for undercatch by rain gauge (fractional value, float). [fractional value]
 
     Attributes:
-    - S: Soil water content (initial condition, float).
-    - S_gw: Groundwater storage (initial condition, float).
-    - T_basin: Basin temperature (float).
-    - T_max: Maximum temperature (float).
-    - T_min: Minimum temperature (float).
-    - Precip: Precipitation (float).
-    - Rain: Rainfall (float).
-    - Snow: Snowfall (float).
-    - Snow_accum: Snow accumulation (cover, float).
-    - Snow_melt: Snow melt (float).
-    - PET: Potential evapotranspiration (float).
-    - ET: Evapotranspiration (float).
-    - Q_s: Surface runoff (float).
-    - Q_gw: Groundwater runoff (float).
-    - Percol: Percolation (float).
-    - Date: Date (pd.Timestamp).
+    - S: Soil water content (initial condition, float). [mm]
+    - S_gw: Groundwater storage (initial condition, float). [mm]
+    - T_basin: Basin temperature (float). [°C]
+    - T_max: Maximum temperature (float). [°C]
+    - T_min: Minimum temperature (float). [°C]
+    - Precip: Precipitation (float). [mm]
+    - Rain: Rainfall (float). [mm]
+    - Snow: Snowfall (float). [mm]
+    - Snow_accum: Snow accumulation (cover, float). [mm]
+    - Snow_melt: Snow melt (float). [mm]
+    - PET: Potential evapotranspiration (float). [mm/day]
+    - ET: Evapotranspiration (float). [mm/day]
+    - Q_s: Surface runoff (float). [mm/day]
+    - Q_gw: Groundwater runoff (float). [mm/day]
+    - Percol: Percolation (float). [mm/day]
+    - Date: Date (pd.Timestamp). [YYYY-MM-DD]
 
     Methods:
     - set_catchment_properties: Set the values of the constants.
@@ -88,7 +88,18 @@ class BucketModel:
     LAT: float = field(init=False, repr=False)
 
     def __post_init__(self):
-        """Check that the initialized values make sense to prevent unrealistic results."""
+        """
+        Check the validity of the model parameters after initialization.
+        """
+        self.check_parameter_validity()
+
+    def check_parameter_validity(self):
+        """
+        Check the validity of the model parameters.
+
+        Raises:
+        - ValueError: If any of the parameters are invalid.
+        """
         if self.k <= 0:
             raise ValueError("k must be positive")
         if self.S_max <= 0:
@@ -97,6 +108,8 @@ class BucketModel:
             raise ValueError("fr must be between 0 and 1")
         if self.rg < 1:
             raise ValueError("rg must be greater than 1")
+        if self.gauge_adj < 0:
+            raise ValueError("gauge_adj must be greater than or equal to 0")
 
     def set_catchment_properties(
         self,
@@ -125,14 +138,34 @@ class BucketModel:
         self.T_SM = snowmelt_temp_threshold
         self.LAT = latitude
 
-    def change_initial_conditions(self) -> None:
+    def change_initial_conditions(self, S: float = None, S_gw: float = None) -> None:
         """
         Change the initial conditions of the model.
 
-        Note:
-        - This method is not implemented yet.
+        Parameters:
+        - S (float, optional): New initial soil water content (mm). Must be between 0 and S_max.
+        - S_gw (float, optional): New initial groundwater storage (mm). Must be non-negative.
+
+
+        Raises:
+        - ValueError: If any of the provided values are outside their valid ranges.
         """
-        raise NotImplementedError("This method is not implemented yet.")
+        if S is not None:
+            if 0 <= S <= self.S_max:
+                self.S = S
+            else:
+                raise ValueError(
+                    f"Initial soil water content must be between 0 and {self.S_max} mm."
+                )
+
+        if S_gw is not None:
+            if S_gw >= 0:
+                self.S_gw = S_gw
+            else:
+                raise ValueError("Initial groundwater storage must be non-negative.")
+
+        print("Initial conditions updated successfully.")
+        print(f"Current initial conditions: S = {self.S} mm, S_gw = {self.S_gw} mm")
 
     def adjust_temperature(self) -> None:
         """
@@ -369,9 +402,17 @@ class BucketModel:
 
         Parameters:
         - parameters (dict): A dictionary containing the parameters to update.
+
+        Raises:
+        - ValueError: If any of the parameters are invalid.
         """
         for key, value in parameters.items():
-            setattr(self, key, value)
+            if hasattr(self, key):
+                setattr(self, key, value)
+            else:
+                raise ValueError(f"Invalid parameter: {key}")
+
+        self.check_parameter_validity()  # Validate after updating all parameters
 
     def get_parameters(self) -> dict:
         """
@@ -380,7 +421,12 @@ class BucketModel:
         Returns:
         - dict: A dictionary containing the model parameters.
         """
-        return self.__dict__
+        parameters = {
+            field.name: getattr(self, field.name)
+            for field in self.__dataclass_fields__.values()
+            if field.init
+        }
+        return parameters
 
     def copy(self) -> "BucketModel":
         """

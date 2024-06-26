@@ -7,6 +7,7 @@ import seaborn as sns
 from typing import Tuple, Optional, List
 
 
+# TODO: Work with copy of data instead of modifying in place
 @dataclass
 class ClimateExtreme:
     """
@@ -90,6 +91,9 @@ class ClimateExtreme:
         - column (str): The column to plot.
         - units (str): The units of the data.
         - output_destination (Optional[str]): File path to save the figure. If None, the plot will be displayed instead of saving.
+
+        Raises:
+        - ValueError: If the Generalized Extreme Value distribution has not been fitted yet.
         """
         if self.extreme is None or column not in self.fit_results:
             raise ValueError(
@@ -142,6 +146,18 @@ class ClimateExtreme:
     ) -> pd.DataFrame:
         """
         Compare the confidence intervals of this ClimateExtreme object with another for a specific column.
+
+        Parameters:
+        - column (str): The column to compare.
+        - other (ClimateExtreme): Another ClimateExtreme object to compare against.
+        - self_name (str): Name to use for this object in the output DataFrame.
+        - other_name (str): Name to use for the other object in the output DataFrame.
+
+        Returns:
+        - pd.DataFrame: A DataFrame containing the fitted parameters and confidence intervals.
+
+        Raises:
+        - ValueError: If the column is not found in the fit_results of either object.
         """
         result = pd.DataFrame(index=["c", "loc", "scale"])
 
@@ -166,7 +182,7 @@ class ClimateExtreme:
         return result
 
     def truncated_ks_test(
-        self, column: str, other: "ClimateExtreme", quantile: float = 0.95
+        self, column: str, other: "ClimateExtreme", quantile: float = 0.99
     ) -> Tuple[float, float]:
         """
         Perform a truncated Kolmogorov-Smirnov test on the extreme values of two datasets.
@@ -178,6 +194,9 @@ class ClimateExtreme:
 
         Returns:
         - Tuple[float, float]: The KS statistic and p-value.
+
+        Raises:
+        - ValueError: If the column is not found in one or both datasets.
         """
         if column not in self.data.columns or column not in other.data.columns:
             raise ValueError(f"Column '{column}' not found in one or both datasets.")
@@ -210,6 +229,9 @@ class ClimateExtreme:
         - other (ClimateExtreme): Another ClimateExtreme object to compare against.
         - quantile (float): The quantile threshold for defining extreme values.
         - output_destination (Optional[str]): File path to save the figure. If None, the plot will be displayed.
+
+        Raises:
+        - ValueError: If the column is not found in one or both datasets.
         """
         threshold_self = self.data[column].quantile(quantile)
         threshold_other = other.data[column].quantile(quantile)
@@ -231,99 +253,4 @@ class ClimateExtreme:
         else:
             plt.show()
 
-    def qq_plot(
-        self,
-        column: str,
-        other: "ClimateExtreme",
-        quantile: float = 0.95,
-        output_destination: Optional[str] = None,
-    ) -> None:
-        """
-        Create a Quantile-Quantile plot comparing the extreme values of two datasets.
-
-        Parameters:
-        - column (str): The column to compare.
-        - other (ClimateExtreme): Another ClimateExtreme object to compare against.
-        - quantile (float): The quantile threshold for defining extreme values.
-        - output_destination (Optional[str]): File path to save the figure. If None, the plot will be displayed.
-        """
-        threshold_self = self.data[column].quantile(quantile)
-        threshold_other = other.data[column].quantile(quantile)
-
-        extremes_self = self.data[self.data[column] > threshold_self][column].values
-        extremes_other = other.data[other.data[column] > threshold_other][column].values
-
-        # Ensure the arrays have the same length
-        min_length = min(len(extremes_self), len(extremes_other))
-        extremes_self = np.sort(extremes_self)[:min_length]
-        extremes_other = np.sort(extremes_other)[:min_length]
-
-        plt.figure(figsize=(8, 8))
-        plt.scatter(extremes_other, extremes_self, alpha=0.5)
-        plt.plot(
-            [extremes_other.min(), extremes_other.max()],
-            [extremes_other.min(), extremes_other.max()],
-            "r--",
-        )
-
-        plt.xlabel("Observed Data Quantiles")
-        plt.ylabel("Generated Data Quantiles")
-        plt.title(f"Q-Q Plot of Extreme Values (>{quantile:.2%} quantile)")
-
-        if output_destination:
-            plt.savefig(output_destination, bbox_inches="tight", dpi=300)
-        else:
-            plt.show()
-
-    # TODO: I need to deal with the DateTime index and somehow figure out how to deal with the many simulations
-    def block_maxima(self, column: str, freq: str = "Y") -> pd.Series:
-        """
-        Apply the Block Maxima method to the data.
-
-        Parameters:
-        - column (str): The column to analyze.
-        - freq (str): The frequency for defining blocks. Default is 'Y' for yearly.
-                      Use 'M' for monthly, 'Q' for quarterly, etc.
-
-        Returns:
-        - pd.Series: A series of block maxima.
-        """
-        if not isinstance(self.data.index, pd.DatetimeIndex):
-            raise ValueError(
-                "The DataFrame index must be a DatetimeIndex for block maxima analysis."
-            )
-
-        return self.data.resample(freq)[column].max()
-
-    def compare_block_maxima(
-        self,
-        column: str,
-        other: "ClimateExtreme",
-        freq: str = "Y",
-        output_destination: Optional[str] = None,
-    ) -> None:
-        """
-        Compare block maxima between two datasets and create a plot.
-
-        Parameters:
-        - column (str): The column to compare.
-        - other (ClimateExtreme): Another ClimateExtreme object to compare against.
-        - freq (str): The frequency for defining blocks.
-        - output_destination (Optional[str]): File path to save the figure. If None, the plot will be displayed.
-        """
-        bm_self = self.block_maxima(column, freq)
-        bm_other = other.block_maxima(column, freq)
-
-        plt.figure(figsize=(12, 6))
-        plt.plot(bm_self.index, bm_self.values, label="Generated Data", marker="o")
-        plt.plot(bm_other.index, bm_other.values, label="Observed Data", marker="s")
-
-        plt.xlabel("Time")
-        plt.ylabel(f"Block Maxima ({column})")
-        plt.title(f"Comparison of Block Maxima ({freq} frequency)")
-        plt.legend()
-
-        if output_destination:
-            plt.savefig(output_destination, bbox_inches="tight", dpi=300)
-        else:
-            plt.show()
+    
