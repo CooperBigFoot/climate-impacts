@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt  # For plotting
 from scipy.stats import gaussian_kde  # For the density plot
 import numpy as np  # For the density plot
 
+import scipy.stats as stats  # For the confidence interval
+
 import pandas as pd  # For the data handling
 
 
@@ -237,115 +239,57 @@ def plot_Q_Q(
         fig.savefig(output_destination, dpi=300, bbox_inches="tight")
 
 
-def plot_ECDF(
-    results: pd.DataFrame,
-    observed: pd.DataFrame,
-    title: str = "",
-    output_destination: str = "",
-    palette: list = ["#007A9A", "#9FFFCB"],
-    figsize: tuple[int, int] = (6, 6),
-    fontsize: int = 12,
-) -> None:
-    """Plot the empirical cumulative distribution function (ECDF) of the observed and simulated total runoff (Q) values.
+# def plot_ECDF(
+#     results: pd.DataFrame,
+#     observed: pd.DataFrame,
+#     title: str = "",
+#     output_destination: str = "",
+#     palette: list = ["#007A9A", "#9FFFCB"],
+#     figsize: tuple[int, int] = (6, 6),
+#     fontsize: int = 12,
+# ) -> None:
+#     """Plot the empirical cumulative distribution function (ECDF) of the observed and simulated total runoff (Q) values.
 
-    Parameters:
-    - results (pd.DataFrame): The results from the model run.
-    - observed (pd.DataFrame): The observed data. Should contain the column 'Q' for the observed runoff.
-    - title (str): The title of the plot, if empty, no title will be shown.
-    - output_destination (str): The path to the output file, if empty, the plot will not be saved.
-    - palette (list): The color palette to use for the plot, default is ['#007A9A', '#9FFFCB'].
-    - figsize (tuple): The size of the figure, default is (6, 6).
-    - fontsize (int): The fontsize of the plot, default is 12.
-    """
-    sns.set_context("paper")
+#     Parameters:
+#     - results (pd.DataFrame): The results from the model run.
+#     - observed (pd.DataFrame): The observed data. Should contain the column 'Q' for the observed runoff.
+#     - title (str): The title of the plot, if empty, no title will be shown.
+#     - output_destination (str): The path to the output file, if empty, the plot will not be saved.
+#     - palette (list): The color palette to use for the plot, default is ['#007A9A', '#9FFFCB'].
+#     - figsize (tuple): The size of the figure, default is (6, 6).
+#     - fontsize (int): The fontsize of the plot, default is 12.
+#     """
+#     sns.set_context("paper")
 
-    # Prepare the data
-    results_filtered = calculate_total_runoff(results)
+#     # Prepare the data
+#     results_filtered = calculate_total_runoff(results)
 
-    fig, ax = plt.subplots(figsize=figsize)
+#     fig, ax = plt.subplots(figsize=figsize)
 
-    # Plot the ECDF of the observed and simulated total runoff
-    sns.ecdfplot(
-        data=results_filtered["Total_Runoff"],
-        ax=ax,
-        color=palette[0],
-        label="Simulated total runoff",
-    )
-    sns.ecdfplot(
-        data=observed["Q"], ax=ax, color=palette[1], label="Observed total runoff"
-    )
+#     # Plot the ECDF of the observed and simulated total runoff
+#     sns.ecdfplot(
+#         data=results_filtered["Total_Runoff"],
+#         ax=ax,
+#         color=palette[0],
+#         label="Simulated total runoff",
+#     )
+#     sns.ecdfplot(
+#         data=observed["Q"], ax=ax, color=palette[1], label="Observed total runoff"
+#     )
 
-    ax.set_xlabel("Total runoff [mm/d]", fontsize=fontsize)
-    ax.set_ylabel("F cumulative", fontsize=fontsize)
-    ax.tick_params(which="both", length=10, width=2, labelsize=fontsize)
-    ax.legend(fontsize=fontsize, loc="best")
-    plt.tight_layout()
-    sns.despine()
-    ax.grid(color="gray", linestyle="--", linewidth=0.5, alpha=0.5)
+#     ax.set_xlabel("Total runoff [mm/d]", fontsize=fontsize)
+#     ax.set_ylabel("F cumulative", fontsize=fontsize)
+#     ax.tick_params(which="both", length=10, width=2, labelsize=fontsize)
+#     ax.legend(fontsize=fontsize, loc="best")
+#     plt.tight_layout()
+#     sns.despine()
+#     ax.grid(color="gray", linestyle="--", linewidth=0.5, alpha=0.5)
 
-    if title:
-        plt.title(title)
+#     if title:
+#         plt.title(title)
 
-    if output_destination:
-        fig.savefig(output_destination, dpi=300, bbox_inches="tight")
-
-
-def plot_boxplots(
-    results: pd.DataFrame,
-    observed: pd.DataFrame,
-    title: str = "",
-    output_destination: str = "",
-    palette: list = ["#007A9A", "#25A18E"],
-    figsize: tuple[int, int] = (3, 6),
-    fontsize: int = 12,
-) -> None:
-    """Plot boxplots of the observed and simulated total runoff (Q) values.
-
-    Parameters:
-    - results (pd.DataFrame): The results from the model run.
-    - observed (pd.DataFrame): The observed data. Should contain the column 'Q' for the observed runoff.
-    - title (str): The title of the plot, if empty, no title will be shown.
-    - output_destination (str): The path to the output file, if empty, the plot will not be saved.
-    - palette (list): The color palette to use for the plot, default is ['#007A9A', '#25A18E'].
-    - figsize (tuple): The size of the figure, default is (6, 6).
-    - fontsize (int): The fontsize of the plot, default is 12.
-    """
-    sns.set_context("paper")
-
-    # Prepare the data
-    results_filtered = calculate_total_runoff(results)
-
-    # Combine the data into a single DataFrame for plotting
-    combined_data = pd.DataFrame(
-        {
-            "Total_Runoff": pd.concat(
-                [results_filtered["Total_Runoff"], observed["Q"]]
-            ),
-            "Type": ["Simulated"] * len(results_filtered)
-            + ["Observed"] * len(observed),
-        }
-    )
-
-    fig, ax = plt.subplots(figsize=figsize)
-
-    # Plot the boxplots
-    sns.boxplot(x="Type", y="Total_Runoff", data=combined_data, palette=palette, ax=ax)
-
-    ax.set_xlabel("", fontsize=fontsize)
-    ax.set_ylabel("Total runoff [mm/d]", fontsize=fontsize)
-    ax.tick_params(which="both", length=10, width=2, labelsize=fontsize)
-
-    if title:
-        plt.title(title, fontsize=fontsize)
-
-    plt.tight_layout()
-    sns.despine()
-    ax.grid(color="gray", linestyle="--", linewidth=0.5, alpha=0.5)
-
-    if output_destination:
-        fig.savefig(output_destination, dpi=300, bbox_inches="tight")
-
-    plt.show()
+#     if output_destination:
+#         fig.savefig(output_destination, dpi=300, bbox_inches="tight")
 
 
 def plot_monthly_boxplot(
@@ -453,7 +397,6 @@ def plot_monthly_boxplot(
 
 def plot_timeseries(
     results: pd.DataFrame,
-    observed: pd.DataFrame,
     start_year: str,
     end_year: str,
     monthly: bool = False,
@@ -479,13 +422,11 @@ def plot_timeseries(
     # Use helper functions for data preparation
     results_filtered = filter_data_by_date(results, start_year, end_year)
     results_filtered = calculate_total_runoff(results_filtered)
-    observed_filtered = filter_data_by_date(observed, start_year, end_year)
 
     fig, ax1 = plt.subplots(figsize=figsize)
 
     if monthly:
         results_filtered = results_filtered.resample("ME").sum()
-        observed_filtered = observed_filtered.resample("ME").sum()
 
     # Plot runoff
     (line1,) = ax1.plot(
@@ -493,13 +434,6 @@ def plot_timeseries(
         results_filtered["Total_Runoff"],
         color=palette[0],
         label="Simulated total runoff",
-        alpha=0.7,
-    )
-    (line2,) = ax1.plot(
-        observed_filtered.index,
-        observed_filtered["Q"],
-        color=palette[1],
-        label="Observed total runoff",
         alpha=0.7,
     )
 
@@ -540,16 +474,15 @@ def plot_timeseries(
 
     ax1.grid(color="gray", linestyle="--", linewidth=0.5, alpha=0.5)
 
-    max_runoff = max(
-        results_filtered["Total_Runoff"].max(), observed_filtered["Q"].max()
-    )
+    max_runoff = results_filtered["Total_Runoff"].max()
+
     ax1.set_ylim(0, max_runoff * 1.5)
 
     # Create legend outside the plot
     if plot_precipitation:
         legends = ax1.legend(
-            handles=[line1, line2, precip_line],
-            labels=[line1.get_label(), line2.get_label(), precip_line.get_label()],
+            handles=[line1, precip_line],
+            labels=[line1.get_label(), precip_line.get_label()],
             loc="upper center",
             bbox_to_anchor=(0.5, -0.15),
             ncol=3,
@@ -557,7 +490,7 @@ def plot_timeseries(
         )
     else:
         legends = ax1.legend(
-            handles=[line1, line2],
+            handles=[line1],
             loc="upper center",
             bbox_to_anchor=(0.5, -0.15),
             ncol=2,
@@ -689,3 +622,71 @@ def plot_parameter_kde(
 
     if output_destination:
         fig.savefig(output_destination, dpi=300, bbox_inches="tight")
+
+
+def group_by_month_with_ci(
+    results_df: pd.DataFrame, n_simulations: int = 50
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Calculate the mean and 95% confidence interval of the monthly data.
+
+    Parameters:
+    - results_df (pd.DataFrame): The results from running the BucketModel for multiple simulations.
+    - n_simulations (int): The number of simulations in the generated ensemble, default is 50.
+
+    Returns:
+    - monthly_mean (pd.DataFrame): The mean of the monthly data.
+    - ci (pd.DataFrame): The 95% confidence interval of the monthly data.
+    """
+
+    results_df = results_df.copy()
+    results_df["month"] = results_df.index.month
+    results_df["year"] = results_df.index.year
+
+    monthly_data = (
+        results_df.groupby(["Simulation", "year", "month"]).sum().reset_index()
+    )
+
+    monthly_mean = monthly_data.groupby("month").mean()
+
+    monthly_std = monthly_data.groupby("month").std()
+
+    ci = stats.t.ppf(0.975, n_simulations - 1) * (monthly_std / np.sqrt(n_simulations))
+
+    return monthly_mean, ci
+
+
+def plot_monthly_runoff_with_ci(
+    results_monthly: pd.DataFrame, ci: pd.DataFrame, output_destination: str = ""
+):
+    """
+    Plots mean monthly total runoff with 95% confidence interval and saves the plot.
+
+    Parameters:
+        results_monthly (pd.DataFrame): DataFrame containing the monthly results with mean values.
+        ci (pd.DataFrame): DataFrame containing the confidence intervals for each month.
+        output_destination (str): File path to save the plot.
+    """
+    results_monthly["total_runoff"] = results_monthly["Q_s"] + results_monthly["Q_gw"]
+    ci_total_runoff = ci["Q_s"] + ci["Q_gw"]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(
+        results_monthly.index,
+        results_monthly["total_runoff"],
+        label="Total Runoff [mm/day]",
+        color="b",
+    )
+    plt.fill_between(
+        results_monthly.index,
+        results_monthly["total_runoff"] - ci_total_runoff,
+        results_monthly["total_runoff"] + ci_total_runoff,
+        color="b",
+        alpha=0.2,
+        label="95% CI",
+    )
+    plt.xlabel("Month")
+    plt.ylabel("Runoff [mm/day]")
+    plt.title("Mean Monthly Total Runoff with 95% Confidence Interval")
+    plt.legend()
+    sns.despine()
+    plt.grid(linestyle="-", alpha=0.7)

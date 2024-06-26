@@ -246,6 +246,7 @@ class ClimateExtreme:
         plt.title(f"Comparison of Extreme Values ({quantile:.2%} quantile)")
         plt.xlabel(column)
         plt.ylabel("Density")
+        sns.despine()
         plt.legend()
 
         if output_destination:
