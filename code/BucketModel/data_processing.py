@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def preprocess_data(processed_mat_df: pd.DataFrame) -> pd.DataFrame:
+def preprocess_for_bucket_model(processed_mat_df: pd.DataFrame) -> pd.DataFrame:
     """This function processes the DataFrame from the processed_mat_file function to a format that can be used for the BucketModel.
 
     Parameters:
@@ -70,7 +70,7 @@ def main() -> None:
     path_to_file = "/Users/cooper/Desktop/bucket-model/data/GSTEIGmeteo.txt"
     output_destination = "/Users/cooper/Desktop/bucket-model/data/GSTEIGmeteo.csv"
     catchment_area = 384.2  # km^2
-    data = preprocess_data(path_to_file, output_destination, catchment_area)
+    data = preprocess_for_bucket_model(path_to_file, output_destination, catchment_area)
     print(data)
 
 
