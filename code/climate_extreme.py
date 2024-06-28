@@ -8,7 +8,6 @@ import seaborn as sns
 from typing import Tuple, Optional, List, Union, Dict
 
 
-# TODO: Work with copy of data instead of modifying in place
 @dataclass
 class ClimateExtreme:
     """
@@ -37,6 +36,10 @@ class ClimateExtreme:
     extreme: np.ndarray = field(init=False, default=None)
     fit_results: dict = field(init=False, default_factory=dict)
     ddf_results: Dict[int, Dict[int, float]] = field(init=False, default_factory=dict)
+
+    def __post_init__(self):
+        # Create a deep copy of the data to prevent modifying the original
+        self.data = self.data.copy()
 
     def fit_genextreme(
         self, column: str, quantile: float, n_bootstrap: int = 1000, ci: float = 0.95
@@ -251,164 +254,6 @@ class ClimateExtreme:
         plt.ylabel("Density")
         sns.despine()
         plt.legend()
-
-        if output_destination:
-            plt.savefig(output_destination, bbox_inches="tight", dpi=300)
-        else:
-            plt.show()
-
-    def compute_ddf(
-        self, column: str, durations: List[int], return_periods: List[int]
-    ) -> None:
-        """
-        Compute the Depth-Duration-Frequency (DDF) data.
-
-        Parameters:
-        - column (str): The precipitation column to analyze.
-        - durations (List[int]): List of durations (in days) to analyze.
-        - return_periods (List[int]): List of return periods (in years) to compute.
-
-        Raises:
-        - ValueError: If the column is not found in the data.
-        """
-        # Create a datetime index
-        df = self.data.copy()
-
-        # Convert month names to numbers
-        df["Month"] = pd.to_datetime(df["Month"], format="%b").dt.month
-
-        # Create the datetime index
-        df["Date"] = pd.to_datetime(df[["Year", "Month", "Day"]])
-        df.set_index("Date", inplace=True)
-
-        ams = {}
-        for duration in durations:
-            # Calculate rolling sum
-            rolling_sum = df[column].rolling(window=duration).sum()
-
-            # Resample to yearly maximum
-            yearly_max = rolling_sum.groupby(rolling_sum.index.year).max()
-
-            ams[duration] = yearly_max
-
-        params = {
-            duration: genextreme.fit(ams[duration].dropna()) for duration in durations
-        }
-
-        self.ddf_results = {
-            duration: {
-                rp: genextreme.ppf(1 - 1 / rp, *params[duration])
-                for rp in return_periods
-            }
-            for duration in durations
-        }
-
-    def fit_ddf_sherman(self, return_period: int) -> Tuple[float, float, float]:
-        """
-        Fit the Sherman equation to the DDF curve for a specific return period.
-
-        The Sherman equation is of the form: I = a / (t + b)^n
-        Where I is intensity, t is duration, and a, b, n are parameters to be fitted.
-
-        Parameters:
-        - return_period (int): The return period to fit the Sherman equation for.
-
-        Returns:
-        - Tuple[float, float, float]: The fitted parameters (a, b, n) for the Sherman equation
-
-        Raises:
-        - ValueError: If the DDF data has not been computed.
-        """
-        if not self.ddf_results:
-            raise ValueError(
-                "DDF data has not been computed. Call compute_ddf() first."
-            )
-
-        durations = np.array(list(self.ddf_results.keys()))
-        depths = np.array(
-            [self.ddf_results[duration][return_period] for duration in durations]
-        )
-
-        # Convert depths to intensities
-        intensities = depths / durations
-
-        def sherman_eq(t, a, b, n):
-            return a / (t + b) ** n
-
-        # Initial guess for parameters
-        p0 = [np.max(intensities) * np.min(durations), 1, 0.5]
-
-        try:
-            popt, _ = curve_fit(sherman_eq, durations, intensities, p0=p0, maxfev=10000)
-            return tuple(popt)
-        except RuntimeError:
-            print(
-                f"Warning: Sherman equation fitting failed for {return_period}-year return period. Using simple power law instead."
-            )
-            # Fall back to simple power law: I = a * t^(-n)
-            a, n = np.polyfit(np.log(durations), np.log(intensities), 1)
-            return (np.exp(n), 0, -a)  # Return in the form of (a, b, n) where b is 0
-
-    def plot_ddf(
-        self,
-        fit_return_periods: Optional[Union[int, List[int]]] = None,
-        output_destination: Optional[str] = None,
-    ) -> None:
-        """
-        Plot the Depth-Duration-Frequency (DDF) curve, optionally with Sherman equation fits for specified return periods.
-
-        Parameters:
-        - fit_return_periods (Optional[Union[int, List[int]]]): If provided, plot the Sherman equation fit for these return period(s).
-        - output_destination (Optional[str]): File path to save the figure. If None, the plot will be displayed.
-
-        Raises:
-        - ValueError: If the DDF data has not been computed.
-        """
-        if not self.ddf_results:
-            raise ValueError(
-                "DDF data has not been computed. Call compute_ddf() first."
-            )
-
-        durations = list(self.ddf_results.keys())
-        return_periods = list(self.ddf_results[durations[0]].keys())
-
-        plt.figure(figsize=(12, 8))
-
-        # Plot DDF curves
-        for rp in return_periods:
-            depths = [self.ddf_results[duration][rp] for duration in durations]
-            plt.plot(durations, depths, marker="o", label=f"{rp}-year return period")
-
-        # Plot fits if specified
-        if fit_return_periods is not None:
-            if isinstance(fit_return_periods, int):
-                fit_return_periods = [fit_return_periods]
-
-            for rp in fit_return_periods:
-                if rp in return_periods:
-                    a, b, n = self.fit_ddf_sherman(rp)
-                    x_fit = np.linspace(min(durations), max(durations), 100)
-                    y_fit = a * x_fit / (x_fit + b) ** n
-                    plt.plot(
-                        x_fit,
-                        y_fit,
-                        "--",
-                        label=f"Sherman Fit ({rp}-year): {a:.2f} * t / (t + {b:.2f})^{n:.2f}",
-                    )
-                else:
-                    print(
-                        f"Warning: {rp}-year return period not in computed data. Skipping fit."
-                    )
-
-        plt.xlabel("Duration (days)")
-        plt.ylabel("Precipitation Depth (mm)")
-        plt.title("Depth-Duration-Frequency Curve")
-        plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
-        plt.grid(linestyle="-", alpha=0.2, color="black")
-        sns.despine()
-        # plt.xscale("log")
-        # plt.yscale("log")
-        plt.tight_layout()
 
         if output_destination:
             plt.savefig(output_destination, bbox_inches="tight", dpi=300)
