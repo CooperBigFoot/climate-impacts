@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 
 from BucketModel.bucket_model import BucketModel
 from BucketModel.bucket_model_plotter import group_by_month_with_ci
-from BucketModel.data_processing import preprocess_for_bucket_model
+from BucketModel.data_processing import preprocess_for_bucket_model, run_multiple_simulations
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -34,51 +34,6 @@ def get_model_from_filename(filename: str) -> str:
         str: The extracted model name, or None if not found.
     """
     return next((model for model in MODELS if model in filename), None)
-
-
-def run_multiple_simulations(
-    preprocessed_simulated_data: pd.DataFrame,
-    bucket_model: BucketModel,
-    n_simulations: int,
-) -> pd.DataFrame:
-    """
-    Run multiple simulations using the bucket model.
-
-    Args:
-        preprocessed_simulated_data (pd.DataFrame): Preprocessed simulation data.
-        bucket_model (BucketModel): Instance of the BucketModel.
-        n_simulations (int): Number of simulations to run.
-
-    Returns:
-        pd.DataFrame: Results of all simulations.
-    """
-    results = pd.DataFrame(
-        columns=[
-            "ET",
-            "Q_s",
-            "Q_gw",
-            "Snow_accum",
-            "S",
-            "S_gw",
-            "Snow_melt",
-            "Rain",
-            "Snow",
-            "Precip",
-            "Simulation",
-        ]
-    )
-
-    for simul in range(1, n_simulations + 1):
-        data = preprocessed_simulated_data[
-            preprocessed_simulated_data["Simulation"] == simul
-        ]
-
-        results_simul = bucket_model.run(data=data)
-        results_simul["Simulation"] = simul
-
-        results = pd.concat([results, results_simul])
-
-    return results
 
 
 def run_model_for_single_scenario(
@@ -247,7 +202,7 @@ def plot_climate_scenarios(
     fig.legend(
         handles=legend_elements,
         loc="lower center",
-        ncol=7,
+        ncol=4,
         bbox_to_anchor=(0.5, -0.08),
     )
 

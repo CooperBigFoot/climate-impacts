@@ -1,4 +1,5 @@
 import pandas as pd
+from BucketModel import BucketModel
 
 
 def preprocess_for_bucket_model(processed_mat_df: pd.DataFrame) -> pd.DataFrame:
@@ -60,6 +61,49 @@ def train_validate_split(data: pd.DataFrame, train_size: float) -> tuple:
 
     return train_data, validate_data
 
+def run_multiple_simulations(
+    preprocessed_simulated_data: pd.DataFrame,
+    bucket_model: BucketModel,
+    n_simulations: int,
+) -> pd.DataFrame:
+    """
+    Run multiple simulations using the bucket model.
+
+    Args:
+        preprocessed_simulated_data (pd.DataFrame): Preprocessed simulation data.
+        bucket_model (BucketModel): Instance of the BucketModel.
+        n_simulations (int): Number of simulations to run.
+
+    Returns:
+        pd.DataFrame: Results of all simulations.
+    """
+    results = pd.DataFrame(
+        columns=[
+            "ET",
+            "Q_s",
+            "Q_gw",
+            "Snow_accum",
+            "S",
+            "S_gw",
+            "Snow_melt",
+            "Rain",
+            "Snow",
+            "Precip",
+            "Simulation",
+        ]
+    )
+
+    for simul in range(1, n_simulations + 1):
+        data = preprocessed_simulated_data[
+            preprocessed_simulated_data["Simulation"] == simul
+        ]
+
+        results_simul = bucket_model.run(data=data)
+        results_simul["Simulation"] = simul
+
+        results = pd.concat([results, results_simul])
+
+    return results
 
 def main() -> None:
     """
