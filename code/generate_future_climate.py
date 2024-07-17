@@ -58,6 +58,7 @@ def generate_future_climate(data: pd.DataFrame, name: str, output_folder: str) -
             future_data["T_max"] = future_data["T_max"] + delta_change["Temperature"]
             future_data["T_min"] = future_data["T_min"] + delta_change["Temperature"]
             future_data["T_avg"] = future_data["T_avg"] + delta_change["Temperature"]
+            future_data["Year"] = future_data["Year"] + 90
 
             output_path = os.path.join(output_folder, f"{name}_{model}_{scenario}.csv")
             future_data.to_csv(output_path, index=False)
