@@ -31,7 +31,7 @@ def generate_future_climate(data: pd.DataFrame, name: str, output_folder: str) -
     Generates future climate data based on the delta change method.
 
     Parameters:
-    - data (pd.DataFrame): The DataFrame containing the historical climate data.
+    - data (pd.DataFrame): The DataFrame containing the simulated climate data.
     - name (str): The prefix to use for the future climate data files.
     - output_folder (str): The folder where the future climate data will be saved.
     """
