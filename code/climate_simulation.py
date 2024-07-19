@@ -218,6 +218,7 @@ def plot_climate_scenarios(
         plt.show()
 
 
+# TODO: Add possibility to plot the results for the present climate as well
 def combine_climate_data(
     folder_path: str, bucket_model: BucketModel, n_simulations: int = 50
 ) -> pd.DataFrame:

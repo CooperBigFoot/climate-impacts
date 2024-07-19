@@ -20,22 +20,17 @@ class ClimateExtreme:
     - data (pd.DataFrame): The input climate data.
     - extreme (np.ndarray): Extracted extreme values.
     - fit_results (dict): Results of distribution fitting.
-    - ddf_results (Dict[int, Dict[int, float]]): Depth-Duration-Frequency data.
 
     Methods:
     - fit_genextreme: Fit a Generalized Extreme Value distribution.
     - plot_fit_and_ci: Plot the fitted distribution with confidence intervals.
     - truncated_ks_test: Perform a Kolmogorov-Smirnov test on extreme values.
     - plot_extreme_comparison: Plot a comparison of extreme value distributions.
-    - compute_ddf: Compute Depth-Duration-Frequency data.
-    - fit_ddf_exponential: Fit an exponential function to the DDF curve.
-    - plot_ddf: Plot the Depth-Duration-Frequency curve.
     """
 
     data: pd.DataFrame
     extreme: np.ndarray = field(init=False, default=None)
     fit_results: dict = field(init=False, default_factory=dict)
-    ddf_results: Dict[int, Dict[int, float]] = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         # Create a deep copy of the data to prevent modifying the original
@@ -160,7 +155,7 @@ class ClimateExtreme:
         - other_name (str): Name to use for the other object in the output DataFrame.
 
         Returns:
-        - pd.DataFrame: A DataFrame containing the fitted parameters and confidence intervals.
+        - pd.DataFrame: A DataFrame containing the fitted parameters and confidence intervals for the two objects.
 
         Raises:
         - ValueError: If the column is not found in the fit_results of either object.
@@ -199,7 +194,7 @@ class ClimateExtreme:
         - quantile (float): The quantile threshold for defining extreme values.
 
         Returns:
-        - Tuple[float, float]: The KS statistic and p-value.
+        - Tuple[float, float]: The KS statistic (a measure of difference) and the p-value.
 
         Raises:
         - ValueError: If the column is not found in one or both datasets.
@@ -239,6 +234,8 @@ class ClimateExtreme:
         Raises:
         - ValueError: If the column is not found in one or both datasets.
         """
+        sns.set_context("paper", font_scale=1.4)
+        
         threshold_self = self.data[column].quantile(quantile)
         threshold_other = other.data[column].quantile(quantile)
 

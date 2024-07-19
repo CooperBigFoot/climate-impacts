@@ -1,5 +1,6 @@
 import pandas as pd
 from BucketModel import BucketModel
+from functools import lru_cache
 
 
 def preprocess_for_bucket_model(processed_mat_df: pd.DataFrame) -> pd.DataFrame:
