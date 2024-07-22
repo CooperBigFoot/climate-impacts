@@ -238,60 +238,6 @@ def plot_Q_Q(
     if output_destination:
         fig.savefig(output_destination, dpi=300, bbox_inches="tight")
 
-
-# def plot_ECDF(
-#     results: pd.DataFrame,
-#     observed: pd.DataFrame,
-#     title: str = "",
-#     output_destination: str = "",
-#     palette: list = ["#007A9A", "#9FFFCB"],
-#     figsize: tuple[int, int] = (6, 6),
-#     fontsize: int = 12,
-# ) -> None:
-#     """Plot the empirical cumulative distribution function (ECDF) of the observed and simulated total runoff (Q) values.
-
-#     Parameters:
-#     - results (pd.DataFrame): The results from the model run.
-#     - observed (pd.DataFrame): The observed data. Should contain the column 'Q' for the observed runoff.
-#     - title (str): The title of the plot, if empty, no title will be shown.
-#     - output_destination (str): The path to the output file, if empty, the plot will not be saved.
-#     - palette (list): The color palette to use for the plot, default is ['#007A9A', '#9FFFCB'].
-#     - figsize (tuple): The size of the figure, default is (6, 6).
-#     - fontsize (int): The fontsize of the plot, default is 12.
-#     """
-#     sns.set_context("paper")
-
-#     # Prepare the data
-#     results_filtered = calculate_total_runoff(results)
-
-#     fig, ax = plt.subplots(figsize=figsize)
-
-#     # Plot the ECDF of the observed and simulated total runoff
-#     sns.ecdfplot(
-#         data=results_filtered["Total_Runoff"],
-#         ax=ax,
-#         color=palette[0],
-#         label="Simulated total runoff",
-#     )
-#     sns.ecdfplot(
-#         data=observed["Q"], ax=ax, color=palette[1], label="Observed total runoff"
-#     )
-
-#     ax.set_xlabel("Total runoff [mm/d]", fontsize=fontsize)
-#     ax.set_ylabel("F cumulative", fontsize=fontsize)
-#     ax.tick_params(which="both", length=10, width=2, labelsize=fontsize)
-#     ax.legend(fontsize=fontsize, loc="best")
-#     plt.tight_layout()
-#     sns.despine()
-#     ax.grid(color="gray", linestyle="--", linewidth=0.5, alpha=0.5)
-
-#     if title:
-#         plt.title(title)
-
-#     if output_destination:
-#         fig.savefig(output_destination, dpi=300, bbox_inches="tight")
-
-
 def plot_monthly_boxplot(
     results: pd.DataFrame,
     title: str = "",
