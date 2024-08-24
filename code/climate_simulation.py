@@ -108,14 +108,14 @@ def run_model_for_future_climate(
 
 
 def plot_climate_scenarios(
-    results: Dict[str, Dict[str, pd.DataFrame]], output_file: str = None
+    results: Dict[str, Dict[str, pd.DataFrame]], output_destination: str = None
 ):
     """
     Plot the results of climate scenarios for different models and RCP scenarios.
 
     Args:
         results (Dict[str, Dict[str, pd.DataFrame]]): Results from run_model_for_future_climate.
-        output_file (str, optional): Path to save the plot. If None, the plot is displayed instead.
+        output_destination (str, optional): Path to save the plot. If None, the plot is displayed instead.
     """
     sns.set_context("paper", font_scale=1.5)
 
@@ -212,13 +212,14 @@ def plot_climate_scenarios(
     plt.tight_layout(rect=[0, 0.05, 1, 1])
     sns.despine()
 
-    if output_file:
-        plt.savefig(output_file, dpi=300, bbox_inches="tight")
+    if output_destination:
+        plt.savefig(output_destination, dpi=300, bbox_inches="tight")
     else:
         plt.show()
 
 
 # TODO: Add possibility to plot the results for the present climate as well
+# TODO: Move to uncertainty_analysis.py (?). Make more sense to me tbh
 def combine_climate_data(
     folder_path: str, bucket_model: BucketModel, n_simulations: int = 50
 ) -> pd.DataFrame:

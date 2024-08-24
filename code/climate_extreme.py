@@ -218,6 +218,7 @@ class ClimateExtreme:
     def plot_extreme_comparison(
         self,
         column: str,
+        units: str,
         other: "ClimateExtreme",
         quantile: float = 0.95,
         output_destination: Optional[str] = None,
@@ -247,7 +248,7 @@ class ClimateExtreme:
         sns.kdeplot(extremes_other, label="Observed Data", shade=True)
 
         plt.title(f"Comparison of Extreme Values ({quantile:.2%} quantile)")
-        plt.xlabel(column)
+        plt.xlabel(column + f" ({units})")
         plt.ylabel("Density")
         sns.despine()
         plt.legend()

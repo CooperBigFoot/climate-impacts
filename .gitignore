@@ -4,3 +4,5 @@ images
 code/__pycache__
 code/BucketModel/__pycache__
 .vscode
+code/.DS_Store
+.DS_Store
