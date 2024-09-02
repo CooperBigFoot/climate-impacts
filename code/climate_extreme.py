@@ -10,22 +10,21 @@ from typing import Tuple, Optional, List, Union, Dict
 
 @dataclass
 class ClimateExtreme:
-    """
-    A class to analyze and compare extreme values in climate data.
+    """A class to analyze and compare extreme values in climate data.
 
     This class provides methods for fitting extreme value distributions,
     performing statistical tests, and visualizing comparisons between datasets.
 
     Attributes:
-    - data (pd.DataFrame): The input climate data.
-    - extreme (np.ndarray): Extracted extreme values.
-    - fit_results (dict): Results of distribution fitting.
+        data (pd.DataFrame): The input climate data.
+        extreme (np.ndarray): Extracted extreme values.
+        fit_results (dict): Results of distribution fitting.
 
     Methods:
-    - fit_genextreme: Fit a Generalized Extreme Value distribution.
-    - plot_fit_and_ci: Plot the fitted distribution with confidence intervals.
-    - truncated_ks_test: Perform a Kolmogorov-Smirnov test on extreme values.
-    - plot_extreme_comparison: Plot a comparison of extreme value distributions.
+        fit_genextreme: Fit a Generalized Extreme Value distribution.
+        plot_fit_and_ci: Plot the fitted distribution with confidence intervals.
+        truncated_ks_test: Perform a Kolmogorov-Smirnov test on extreme values.
+        plot_extreme_comparison: Plot a comparison of extreme value distributions.
     """
 
     data: pd.DataFrame
@@ -42,15 +41,15 @@ class ClimateExtreme:
         """
         Fit a Generalized Extreme Value distribution to the data and compute confidence intervals.
 
-        Parameters:
-        - column (str): The column to fit the distribution to.
-        - quantile (float): The quantile to use for the threshold.
-        - n_bootstrap (int): Number of bootstrap samples for CI estimation.
-        - ci (float): Confidence interval level.
+        Args:
+            column (str): The column to fit the distribution to.
+            quantile (float): The quantile to use for the threshold.
+            n_bootstrap (int): Number of bootstrap samples for CI estimation.
+            ci (float): Confidence interval level.
 
         Returns:
-        - Tuple[float, float, float, np.ndarray, np.ndarray]:
-          The parameters of the fitted distribution (c, loc, scale) and their confidence intervals.
+            Tuple[float, float, float, np.ndarray, np.ndarray]:
+            The parameters of the fitted distribution (c, loc, scale) and their confidence intervals.
         """
         if column not in self.data.columns:
             raise ValueError(f"Column '{column}' not found in the data.")
@@ -88,13 +87,13 @@ class ClimateExtreme:
         """
         Plot the histogram of the data against the fitted Generalized Extreme Value distribution with confidence intervals.
 
-        Parameters:
-        - column (str): The column to plot.
-        - units (str): The units of the data.
-        - output_destination (Optional[str]): File path to save the figure. If None, the plot will be displayed instead of saving.
+        Args:
+            column (str): The column to plot.
+            units (str): The units of the data.
+            output_destination (Optional[str]): File path to save the figure. If None, the plot will be displayed instead of saving.
 
         Raises:
-        - ValueError: If the Generalized Extreme Value distribution has not been fitted yet.
+            ValueError: If the Generalized Extreme Value distribution has not been fitted yet.
         """
         if self.extreme is None or column not in self.fit_results:
             raise ValueError(
@@ -148,17 +147,17 @@ class ClimateExtreme:
         """
         Compare the confidence intervals of this ClimateExtreme object with another for a specific column.
 
-        Parameters:
-        - column (str): The column to compare.
-        - other (ClimateExtreme): Another ClimateExtreme object to compare against.
-        - self_name (str): Name to use for this object in the output DataFrame.
-        - other_name (str): Name to use for the other object in the output DataFrame.
+        Args:
+            column (str): The column to compare.
+            other (ClimateExtreme): Another ClimateExtreme object to compare against.
+            self_name (str): Name to use for this object in the output DataFrame.
+            other_name (str): Name to use for the other object in the output DataFrame.
 
         Returns:
-        - pd.DataFrame: A DataFrame containing the fitted parameters and confidence intervals for the two objects.
+            pd.DataFrame: A DataFrame containing the fitted parameters and confidence intervals for the two objects.
 
         Raises:
-        - ValueError: If the column is not found in the fit_results of either object.
+            ValueError: If the column is not found in the fit_results of either object.
         """
         result = pd.DataFrame(index=["c", "loc", "scale"])
 
@@ -188,16 +187,16 @@ class ClimateExtreme:
         """
         Perform a truncated Kolmogorov-Smirnov test on the extreme values of two datasets.
 
-        Parameters:
-        - column (str): The column to compare.
-        - other (ClimateExtreme): Another ClimateExtreme object to compare against.
-        - quantile (float): The quantile threshold for defining extreme values.
+        Args:
+            column (str): The column to compare.
+            other (ClimateExtreme): Another ClimateExtreme object to compare against.
+            quantile (float): The quantile threshold for defining extreme values.
 
         Returns:
-        - Tuple[float, float]: The KS statistic (a measure of difference) and the p-value.
+            Tuple[float, float]: The KS statistic (a measure of difference) and the p-value.
 
         Raises:
-        - ValueError: If the column is not found in one or both datasets.
+            ValueError: If the column is not found in one or both datasets.
         """
         if column not in self.data.columns or column not in other.data.columns:
             raise ValueError(f"Column '{column}' not found in one or both datasets.")
@@ -226,14 +225,14 @@ class ClimateExtreme:
         """
         Plot the extreme value distributions of two datasets for comparison.
 
-        Parameters:
-        - column (str): The column to compare.
-        - other (ClimateExtreme): Another ClimateExtreme object to compare against.
-        - quantile (float): The quantile threshold for defining extreme values.
-        - output_destination (Optional[str]): File path to save the figure. If None, the plot will be displayed.
+        Args:
+            column (str): The column to compare.
+            other (ClimateExtreme): Another ClimateExtreme object to compare against.
+            quantile (float): The quantile threshold for defining extreme values.
+            output_destination (Optional[str]): File path to save the figure. If None, the plot will be displayed.
 
         Raises:
-        - ValueError: If the column is not found in one or both datasets.
+            ValueError: If the column is not found in one or both datasets.
         """
         sns.set_context("paper", font_scale=1.4)
         

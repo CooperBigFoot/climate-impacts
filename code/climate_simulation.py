@@ -109,7 +109,7 @@ def run_model_for_future_climate(
 # TODO: Add possibility to plot the results for the present climate as well
 def plot_climate_scenarios(
     results: Dict[str, Dict[str, pd.DataFrame]], output_destination: str = None
-):
+) -> None:
     """
     Plot the results of climate scenarios for different models and RCP scenarios.
 

@@ -12,11 +12,11 @@ FIGURE_SIZE = (6, 6)
 def add_is_wet_column(df: pd.DataFrame) -> pd.DataFrame:
     """Add a column to indicate whether a day is wet.
 
-    Parameters:
-    - df (pd.DataFrame): The input dataframe.
+    Args:
+        df (pd.DataFrame): The input dataframe.
 
     Returns:
-    - pd.DataFrame: The dataframe with the added column.
+        pd.DataFrame: The dataframe with the added column.
     """
 
     df["is_wet"] = df["Precipitation"] > 0.1
@@ -24,13 +24,13 @@ def add_is_wet_column(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def group_data(df: pd.DataFrame, by_columns: list) -> pd.DataFrame:
-    """Generic grouping of the dataframe by specified columns.
+    """Groups the input dataframe by specified columns.
 
-    Parameters:
-    - df (pd.DataFrame): The input dataframe.
+    Args:
+        df (pd.DataFrame): The input dataframe.
 
-    Returns:
-    - pd.DataFrame: The grouped dataframe."""
+        pd.DataFrame: The grouped dataframe.
+    """
 
     return df.groupby(by_columns).sum().reset_index()
 
@@ -40,12 +40,12 @@ def calculate_monthly_stats(
 ) -> pd.DataFrame:
     """Calculate monthly statistics and adjust grouping if simulation data is included.
 
-    Parameters:
-    - df (pd.DataFrame): The input dataframe.
-    - include_simulation (bool): Whether to include simulation data in the grouping.
+    Args:
+        df (pd.DataFrame): The input dataframe.
+        include_simulation (bool): Whether to include simulation data in the grouping.
 
     Returns:
-    - pd.DataFrame: The dataframe with monthly statistics.
+        pd.DataFrame: The dataframe with monthly statistics.
     """
 
     group_cols = (
@@ -75,13 +75,10 @@ def plot_wet_days(
 ) -> None:
     """Plot the number of wet days from observations and simulation.
 
-    Parameters:
-    - observations (pd.DataFrame): The observed data.
-    - simulation (pd.DataFrame): The simulated data.
-    - output_destination (str): File path to save the figure. If None, the plot will be displayed instead of saving.
-
-    Returns:
-    - None
+    Args:
+        observations (pd.DataFrame): The observed data.
+        simulation (pd.DataFrame): The simulated data.
+        output_destination (str): File path to save the figure. If None, the plot will be displayed instead of saving.
     """
 
     obs_wet_days = add_is_wet_column(observations)
@@ -122,15 +119,12 @@ def plot_ECDF(
 ) -> None:
     """Plot the cumulative distribution function of the observations and simulation.
 
-    Parameters:
-    - observations (pd.DataFrame): The observed data.
-    - simulation (pd.DataFrame): The simulated data.
-    - column (str): The column to plot.
-    - xlabel (str): The x-axis label.
-    - output_destination (str): File path to save the figure. If None, the plot will be displayed instead of saving.
-
-    Returns:
-    - None
+    Args:
+        observations (pd.DataFrame): The observed data.
+        simulation (pd.DataFrame): The simulated data.
+        column (str): The column to plot.
+        xlabel (str): The x-axis label.
+        output_destination (str): File path to save the figure. If None, the plot will be displayed instead of saving.
     """
 
     plt.figure(figsize=FIGURE_SIZE)
@@ -152,13 +146,10 @@ def plot_mean_and_std(
 ) -> None:
     """Plot the mean and standard deviation of observations and simulation data for a specified column.
 
-    Parameters:
-    - observations (pd.DataFrame): The observed data.
-    - simulation (pd.DataFrame): The simulated data.
-    - output_destination (str): File path to save the figure. If None, the plot will be displayed instead of saving.
-
-    Returns:
-    - None
+    Args:
+        observations (pd.DataFrame): The observed data.
+        simulation (pd.DataFrame): The simulated data.
+        output_destination (str): File path to save the figure. If None, the plot will be displayed instead of saving.
     """
 
     obs_stats_monthly = calculate_monthly_stats(observations)
@@ -212,11 +203,8 @@ def plot_mean_and_std(
 def plot_ddf(data: pd.DataFrame) -> None:
     """Plot the Depth-Duration-Frequency curve.
 
-    Parameters:
-    - data (pd.DataFrame): The input dataframe.
-
-    Returns:
-    - None
+    Args:
+        data (pd.DataFrame): The input dataframe.
     """
 
     durations = [1, 2, 3, 4, 5, 6, 7]

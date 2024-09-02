@@ -23,13 +23,12 @@ MONTH_ORDER = [
 def _map_numeric_to_month(month_numeric: int) -> str:
     """
     Map a numeric month to its corresponding string representation.
-    Returns 'Invalid Month' if the input is not between 1 and 12.
 
-    Parameters:
-    - month_numeric (int): The numeric representation of the month.
+    Args:
+        month_numeric (int): The numeric representation of the month.
 
     Returns:
-    - str: The string representation of the month or 'Invalid Month'.
+        str: The string representation of the month or 'Invalid Month'.
     """
     if 1 <= month_numeric <= 12:
         return MONTH_ORDER[month_numeric - 1]
@@ -38,13 +37,13 @@ def _map_numeric_to_month(month_numeric: int) -> str:
 
 def _is_input_data_mat_file(file_path: str) -> bool:
     """
-    Check if the file is the Input_data.mat file
+    Check if the file is the Input_data.mat file.
 
-    Parameters
-    - file_path: The path of the file
+    Args:
+        file_path (str): The path of the file.
 
-    Returns
-    - True if the file is the Input_data.mat file, False otherwise
+    Returns:
+        bool: True if the file is the Input_data.mat file, False otherwise.
     """
 
     return os.path.basename(file_path) == "Input_data.mat"
@@ -52,13 +51,13 @@ def _is_input_data_mat_file(file_path: str) -> bool:
 
 def add_year_column(df: pd.DataFrame, file_path: str) -> pd.DataFrame:
     """
-    Add a Year column to the DataFrame based on the file path
+    Add a Year column to the DataFrame based on the file path.
 
-    Parameters
-    - df: The DataFrame to transform
+    Args:
+        df (pd.DataFrame): The DataFrame to transform.
 
-    Returns
-    - The DataFrame with the added Year column
+    Returns:
+        pd.DataFrame: The DataFrame with the added Year column.
     """
     if _is_input_data_mat_file(file_path):
         df["Year"] = (df.index // 365) + 1986
@@ -71,11 +70,11 @@ def add_date_column(df: pd.DataFrame) -> pd.DataFrame:
     """
     Add a Date column to the DataFrame based on the Year column
 
-    Parameters
-    - df: The DataFrame to transform
+    Args:
+        df: The DataFrame to transform
 
-    Returns
-    - The DataFrame with the added Date column
+    Returns:
+        The DataFrame with the added Date column
     """
     start_date = pd.to_datetime(f'{df["Year"].iloc[0]}-01-01')
     df["Date"] = start_date + pd.to_timedelta(df.index % 365, unit="D")
@@ -85,18 +84,18 @@ def add_date_column(df: pd.DataFrame) -> pd.DataFrame:
 def handle_leap_years(df: pd.DataFrame) -> pd.DataFrame:
     """
     Adjust dates in the DataFrame for leap years to align dates from March 1st onwards with non-leap years.
-    
-    This function identifies all leap years within the DataFrame's 'Date' column. For each leap year identified, 
+
+    This function identifies all leap years within the DataFrame's 'Date' column. For each leap year identified,
     it shifts all dates from March 1st and onwards by one day forward.
 
-    Parameters:
-    - df (pd.DataFrame): DataFrame containing a 'Date' column in datetime format.
+    Args:
+        df (pd.DataFrame): DataFrame containing a 'Date' column in datetime format.
 
     Returns:
-    - pd.DataFrame: Modified DataFrame with adjusted dates for leap years.
+        pd.DataFrame: Modified DataFrame with adjusted dates for leap years.
 
     Note:
-    - Only adjusts dates from March 1st onwards in leap years, earlier dates in leap years are not affected.
+        Only adjusts dates from March 1st onwards in leap years, earlier dates in leap years are not affected.
     """
     leap_years = df["Date"].dt.year[df["Date"].dt.is_leap_year].unique()
     for year in leap_years:
@@ -108,13 +107,13 @@ def handle_leap_years(df: pd.DataFrame) -> pd.DataFrame:
 
 def skip_feb_29(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Skip February 29 in the Date column of the DataFrame
+    Skip February 29 in the Date column of the DataFrame.
 
-    Parameters
-    - df: The DataFrame to transform
+    Args:
+        df (pd.DataFrame): The DataFrame to transform.
 
-    Returns
-    - The DataFrame with February 29 skipped
+    Returns:
+        pd.DataFrame: The DataFrame with February 29 skipped.
     """
     df.loc[
         (df["Date"].dt.month == 2) & (df["Date"].dt.day == 29), "Date"
@@ -124,13 +123,13 @@ def skip_feb_29(df: pd.DataFrame) -> pd.DataFrame:
 
 def add_month_day_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Add Month and Day columns to the DataFrame based on the Date column
+    Add Month and Day columns to the DataFrame based on the Date column.
 
-    Parameters
-    - df: The DataFrame to transform
+    Args:
+        df (pd.DataFrame): The DataFrame to transform.
 
-    Returns
-    - The DataFrame with the added Month and Day columns
+    Returns:
+        pd.DataFrame: The DataFrame with the added Month and Day columns.
     """
     df["Month"] = df["Date"].dt.month.apply(_map_numeric_to_month)
     df["Month"] = pd.Categorical(df["Month"], categories=MONTH_ORDER, ordered=True)
@@ -141,13 +140,13 @@ def add_month_day_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 def transform_dates(df: pd.DataFrame, file_path: str) -> pd.DataFrame:
     """
-    Transform the DataFrame by adding Year, Month and Day columns
+    Transform the DataFrame by adding Year, Month, and Day columns.
 
-    Parameters
-    - df: The DataFrame to transform
+    Args:
+        df (pd.DataFrame): The DataFrame to transform.
 
-    Returns
-    - The transformed DataFrame
+    Returns:
+        pd.DataFrame: The transformed DataFrame.
     """
     return (
         df.pipe(add_year_column, file_path)
@@ -160,13 +159,13 @@ def transform_dates(df: pd.DataFrame, file_path: str) -> pd.DataFrame:
 
 def process_mat_file(file_path: str) -> pd.DataFrame:
     """
-    Process the .mat file and return its content as a DataFrame
+    Process the .mat file and return its content as a DataFrame.
 
-    Parameters
-    - file_path: The path of the .mat file
+    Args:
+        file_path (str): The path of the .mat file.
 
-    Returns
-    - The content of the .mat file as a DataFrame
+    Returns:
+        pd.DataFrame: The content of the .mat file as a DataFrame.
     """
 
     mat_data = scipy.io.loadmat(file_path)
@@ -196,5 +195,3 @@ def process_mat_file(file_path: str) -> pd.DataFrame:
         ) + 1
 
     return all_realizations_df
-
-
