@@ -107,6 +107,127 @@ def run_model_for_future_climate(
     return results
 
 
+from typing import Dict, List
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib.lines import Line2D
+
+
+def generate_color_palette() -> Dict[str, tuple]:
+    """
+    Generate a color palette for climate models and present climate.
+
+    Returns:
+        Dict[str, tuple]: A dictionary mapping model names to color tuples.
+    """
+    colors = sns.color_palette("husl", n_colors=6)
+    return {
+        "CLMCOM-CCLM4-ECEARTH": colors[0],
+        "CLMCOM-CCLM4-HADGEM": colors[1],
+        "DMI-HIRHAM-ECEARTH": colors[2],
+        "MPICSC-REMO1-MPIESM": colors[3],
+        "SMHI-RCA-IPSL": colors[4],
+        "present": colors[5],
+    }
+
+
+def setup_subplot(ax: plt.Axes, title: str, ylabel: str) -> None:
+    """
+    Set up a subplot with common attributes.
+
+    Args:
+        ax (plt.Axes): The subplot axes to set up.
+        title (str): The title for the subplot.
+        ylabel (str): The label for the y-axis.
+    """
+    ax.set_title(title)
+    ax.set_ylabel(ylabel)
+    ax.set_xticks(range(1, 13))
+    ax.set_xticklabels(
+        [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+        ]
+    )
+    ax.grid(linestyle="--", alpha=0.7)
+
+
+def plot_climate_variable(
+    ax: plt.Axes,
+    results: Dict[str, Dict[str, pd.DataFrame]],
+    present_results: pd.DataFrame,
+    variable: str,
+    palette: Dict[str, tuple],
+) -> None:
+    """
+    Plot a climate variable for different models and scenarios.
+
+    Args:
+        ax (plt.Axes): The subplot axes to plot on.
+        results (Dict[str, Dict[str, pd.DataFrame]]): The climate scenario results.
+        present_results (pd.DataFrame): The present climate results.
+        variable (str): The name of the climate variable to plot.
+        palette (Dict[str, tuple]): The color palette for different models.
+    """
+    for rcp in ["4.5", "8.5"]:
+        linestyle = "--" if rcp == "4.5" else "-"
+        for model, monthly_mean in results[rcp].items():
+            ax.plot(
+                monthly_mean[variable],
+                linestyle=linestyle,
+                color=palette[model],
+                alpha=0.7,
+            )
+    ax.plot(
+        present_results[variable],
+        color=palette["present"],
+        lw=2,
+        linestyle="-",
+        alpha=0.7,
+    )
+
+
+def create_legend(palette: Dict[str, tuple]) -> List[Line2D]:
+    """
+    Create legend elements for the plot.
+
+    Args:
+        palette (Dict[str, tuple]): The color palette for different models.
+
+    Returns:
+        List[Line2D]: A list of Line2D objects representing legend elements.
+    """
+    legend_elements = [
+        Line2D([0], [0], color="black", lw=2, linestyle="-", label="RCP 8.5"),
+        Line2D([0], [0], color="black", lw=2, linestyle="--", label="RCP 4.5"),
+        Line2D(
+            [0],
+            [0],
+            color=palette["present"],
+            lw=2,
+            linestyle="-",
+            label="Present climate",
+        ),
+    ]
+    for model, color in palette.items():
+        if model != "present":
+            legend_elements.append(
+                Line2D([0], [0], color=color, lw=2, label=f"Model {model}")
+            )
+    return legend_elements
+
+
 def plot_climate_scenarios(
     results: Dict[str, Dict[str, pd.DataFrame]],
     present_results: pd.DataFrame,
@@ -115,120 +236,42 @@ def plot_climate_scenarios(
     """
     Plot the results of climate scenarios for different models and RCP scenarios.
 
+    This function creates a 2x2 grid of subplots, each showing a different climate
+    variable (precipitation, evapotranspiration, snowmelt, and runoff) for multiple
+    climate models and RCP scenarios, as well as the present climate.
+
     Args:
-        results (Dict[str, Dict[str, pd.DataFrame]]): Results from run_model_for_future_climate.
-        present_results (pd.DataFrame): Monthly mean results for the present climate.
-        output_destination (str, optional): Path to save the plot. If None, the plot is displayed instead.
+        results: A nested dictionary containing the results from run_model_for_future_climate.
+            The outer dictionary keys are RCP scenarios ("4.5" and "8.5"), and the inner
+            dictionary keys are model names. Values are pandas DataFrames with monthly data.
+        present_results: A pandas DataFrame containing monthly mean results for the present climate.
+        output_destination: If provided, the path where the plot will be saved.
+            If None, the plot will be displayed instead.
     """
     sns.set_context("paper", font_scale=1.5)
+    palette = generate_color_palette()
 
-    colors = sns.color_palette("husl", n_colors=6)
-
-    palette = {
-        "CLMCOM-CCLM4-ECEARTH": colors[0],
-        "CLMCOM-CCLM4-HADGEM": colors[1],
-        "DMI-HIRHAM-ECEARTH": colors[2],
-        "MPICSC-REMO1-MPIESM": colors[3],
-        "SMHI-RCA-IPSL": colors[4],
-    }
-
-    rcps = ["4.5", "8.5"]
-
-    layout = (2, 2)
-    fig = plt.figure(figsize=(12, 10))
-
-    ax_precipitation = plt.subplot2grid(layout, (0, 0))
-    ax_evaporation = plt.subplot2grid(layout, (0, 1))
-    ax_snowmelt = plt.subplot2grid(layout, (1, 0))
-    ax_total_runoff = plt.subplot2grid(layout, (1, 1))
-
-    for rcp in rcps:
-        linestyle = "--" if rcp == "4.5" else "-"
-        for model, monthly_mean in results[rcp].items():
-            ax_precipitation.plot(
-                monthly_mean["Precip"],
-                linestyle=linestyle,
-                color=palette[model],
-                alpha=0.7,
-            )
-            ax_evaporation.plot(
-                monthly_mean["ET"], linestyle=linestyle, color=palette[model], alpha=0.7
-            )
-            ax_snowmelt.plot(
-                monthly_mean["Snow_melt"],
-                linestyle=linestyle,
-                color=palette[model],
-                alpha=0.7,
-            )
-            ax_total_runoff.plot(
-                monthly_mean["total_runoff"],
-                linestyle=linestyle,
-                color=palette[model],
-                alpha=0.7,
-            )
-
-    ax_precipitation.plot(
-        present_results["Precip"], color=colors[5], lw=2, linestyle="-", alpha=0.7
+    fig, ((ax_precipitation, ax_evaporation), (ax_snowmelt, ax_total_runoff)) = (
+        plt.subplots(2, 2, figsize=(12, 10))
     )
 
-    ax_evaporation.plot(
-        present_results["ET"], color=colors[5], lw=2, linestyle="-", alpha=0.7
+    plot_climate_variable(ax_precipitation, results, present_results, "Precip", palette)
+    plot_climate_variable(ax_evaporation, results, present_results, "ET", palette)
+    plot_climate_variable(ax_snowmelt, results, present_results, "Snow_melt", palette)
+    plot_climate_variable(
+        ax_total_runoff, results, present_results, "total_runoff", palette
     )
 
-    ax_snowmelt.plot(
-        present_results["Snow_melt"], color=colors[5], lw=2, linestyle="-", alpha=0.7
+    setup_subplot(ax_precipitation, "Precipitation", "Mean monthly precipitation [mm]")
+    setup_subplot(
+        ax_evaporation, "Evapotranspiration", "Mean monthly evapotranspiration [mm]"
     )
+    setup_subplot(ax_snowmelt, "Snowmelt", "Mean monthly snowmelt [mm]")
+    setup_subplot(ax_total_runoff, "Runoff", "Mean monthly streamflow [mm]")
 
-    ax_total_runoff.plot(
-        present_results["total_runoff"], color=colors[5], lw=2, linestyle="-", alpha=0.7
-    )
-
-    ax_precipitation.set_title("Precipitation")
-    ax_precipitation.set_ylabel("Mean monthly precipitation [mm]")
-
-    ax_evaporation.set_title("Evapotranspiration")
-    ax_evaporation.set_ylabel("Mean monthly evapotranspiration [mm]")
-
-    ax_snowmelt.set_title("Snowmelt")
-    ax_snowmelt.set_ylabel("Mean monthly snowmelt [mm]")
-
-    ax_total_runoff.set_title("Runoff")
-    ax_total_runoff.set_ylabel("Mean monthly streamflow [mm]")
-
-    months = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-    ]
-    for ax in [ax_precipitation, ax_evaporation, ax_snowmelt, ax_total_runoff]:
-        ax.set_xticks(range(1, 13))
-        ax.set_xticklabels(months)
-        ax.grid(linestyle="--", alpha=0.7)
-
-    legend_elements = [
-        Line2D([0], [0], color="black", lw=2, linestyle="-", label="RCP 8.5"),
-        Line2D([0], [0], color="black", lw=2, linestyle="--", label="RCP 4.5"),
-        Line2D([0], [0], color=colors[5], lw=2, linestyle="-", label="Present climate"),
-    ]
-    for model, color in palette.items():
-        legend_elements.append(
-            Line2D([0], [0], color=color, lw=2, label=f"Model {model}")
-        )
-
+    legend_elements = create_legend(palette)
     fig.legend(
-        handles=legend_elements,
-        loc="lower center",
-        ncol=4,
-        bbox_to_anchor=(0.5, -0.08),
+        handles=legend_elements, loc="lower center", ncol=4, bbox_to_anchor=(0.5, -0.08)
     )
 
     plt.tight_layout(rect=[0, 0.05, 1, 1])
