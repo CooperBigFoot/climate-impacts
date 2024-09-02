@@ -4,13 +4,13 @@ from functools import lru_cache
 
 
 def preprocess_for_bucket_model(processed_mat_df: pd.DataFrame) -> pd.DataFrame:
-    """This function processes the DataFrame from the processed_mat_file function to a format that can be used for the BucketModel.
+    """Processes the DataFrame from the processed_mat_file function to a format that can be used for the BucketModel.
 
-    Parameters:
-    - processed_mat_df (pd.DataFrame): The DataFrame containing the data from the processed_mat_file function.
+    Args:
+        processed_mat_df (pd.DataFrame): The DataFrame containing the data from the processed_mat_file function.
 
     Returns:
-    - pd.DataFrame | None: A DataFrame containing the data in a format that can be used for the BucketModel. 
+        pd.DataFrame | None: A DataFrame containing the data in a format that can be used for the BucketModel. 
     """
 
     months = {
@@ -46,14 +46,14 @@ def preprocess_for_bucket_model(processed_mat_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def train_validate_split(data: pd.DataFrame, train_size: float) -> tuple:
-    """This function splits the data into training and validating sets.
+    """Splits the data into training and validating sets.
 
-    Parameters:
-    - data (pd.DataFrame): The DataFrame containing the data.
-    - train_size (float): The proportion of the data to use for training. This is a value between 0 and 1.
+    Args:
+        data (pd.DataFrame): The DataFrame containing the data.
+        train_size (float): The proportion of the data to use for training. This is a value between 0 and 1.
 
     Returns:
-    - tuple: A tuple containing the training and testing DataFrames.
+        tuple: A tuple containing the training and testing DataFrames.
     """
 
     train_size = int(len(data) * train_size)

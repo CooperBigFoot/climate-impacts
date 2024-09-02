@@ -14,11 +14,11 @@ def calculate_total_runoff(results: pd.DataFrame) -> pd.DataFrame:
     """
     Calculate total runoff by summing surface runoff (Q_s) and groundwater runoff (Q_gw).
 
-    Parameters:
-    - results (pd.DataFrame): The results dataframe containing Q_s and Q_gw columns.
+    Args:
+        results (pd.DataFrame): The results dataframe containing Q_s and Q_gw columns.
 
     Returns:
-    - pd.DataFrame: The input dataframe with an additional 'Total_Runoff' column.
+        pd.DataFrame: The input dataframe with an additional 'Total_Runoff' column.
     """
     results_copy = results.copy()
     results_copy["Total_Runoff"] = results_copy["Q_s"] + results_copy["Q_gw"]
@@ -31,13 +31,13 @@ def filter_data_by_date(
     """
     Filter the dataframe to include only data within the specified date range.
 
-    Parameters:
-    - data (pd.DataFrame): The input dataframe with a datetime index.
-    - start_year (str): The start year of the date range (inclusive).
-    - end_year (str): The end year of the date range (inclusive).
+    Args:
+        data (pd.DataFrame): The input dataframe with a datetime index.
+        start_year (str): The start year of the date range (inclusive).
+        end_year (str): The end year of the date range (inclusive).
 
     Returns:
-    - pd.DataFrame: The filtered dataframe.
+        pd.DataFrame: The filtered dataframe.
     """
     return data[start_year:end_year]
 
@@ -54,15 +54,15 @@ def plot_water_balance(
 ) -> None:
     """Plot the water balance of the model.
 
-    Parameters:
-    - results (pd.DataFrame): The results from the model run.
-    - title (str): The title of the plot, if empty, no title will be shown.
-    - output_destination (str): The path to the output file, if empty, the plot will not be saved.
-    - palette (list): The color palette to use for the plot, default is ['#004E64', '#007A9A', '#00A5CF', '#9FFFCB', '#25A18E'].
-    - start_year (str): The start year of the plot, default is '1986'.
-    - end_year (str): The end year of the plot, default is '2000'.
-    - figsize (tuple): The size of the figure, default is (10, 6).
-    - fontsize (int): The fontsize of the plot, default is 12.
+    Args:
+        results (pd.DataFrame): The results from the model run.
+        title (str): The title of the plot, if empty, no title will be shown.
+        output_destination (str): The path to the output file, if empty, the plot will not be saved.
+        palette (list): The color palette to use for the plot, default is ['#004E64', '#007A9A', '#00A5CF', '#9FFFCB', '#25A18E'].
+        start_year (str): The start year of the plot, default is '1986'.
+        end_year (str): The end year of the plot, default is '2000'.
+        figsize (tuple): The size of the figure, default is (10, 6).
+        fontsize (int): The fontsize of the plot, default is 12.
     """
     # Some style settings
     BAR_WIDTH = 0.35
@@ -80,13 +80,13 @@ def plot_water_balance(
     ) -> None:
         """Plot a single layer of a bar chart.
 
-        Parameters:
-        - ax (plt.Axes): The axis to plot on.
-        - positions (np.ndarray): The x-positions of the bars.
-        - heights (np.ndarray): The heights of the bars.
-        - label (str): The label of the layer.
-        - color (str): The color of the layer.
-        - bottom_layer_heights (np.ndarray): The heights of the bottom layer, default is None.
+        Args:
+            ax (plt.Axes): The axis to plot on.
+            positions (np.ndarray): The x-positions of the bars.
+            heights (np.ndarray): The heights of the bars.
+            label (str): The label of the layer.
+            color (str): The color of the layer.
+            bottom_layer_heights (np.ndarray): The heights of the bottom layer, default is None.
         """
         ax.bar(
             positions,
@@ -165,17 +165,17 @@ def plot_Q_Q(
 ) -> None:
     """Plot the observed vs simulated total runoff (Q) values.
 
-    Parameters:
-    - results (pd.DataFrame): The results from the model run.
-    - observed (pd.DataFrame): The observed data. Should contain the column 'Q' for the observed runoff.
-    - title (str): The title of the plot, if empty, no title will be shown.
-    - output_destination (str): The path to the output file, if empty, the plot will not be saved.
-    - color (str): The color of the plot, default is '#007A9A'.
-    - figsize (tuple): The size of the figure, default is (6, 6).
-    - fontsize (int): The fontsize of the plot, default is 12.
-    - line (bool): If True, a 1:1 line will be plotted, default is True.
-    - kde (bool): If True, a kernel density estimate will be plotted, default is True.
-    - cmap (str): The colormap to use for the kde, default is 'rainbow'.
+    Args:
+        results (pd.DataFrame): The results from the model run.
+        observed (pd.DataFrame): The observed data. Should contain the column 'Q' for the observed runoff.
+        title (str): The title of the plot, if empty, no title will be shown.
+        output_destination (str): The path to the output file, if empty, the plot will not be saved.
+        color (str): The color of the plot, default is '#007A9A'.
+        figsize (tuple): The size of the figure, default is (6, 6).
+        fontsize (int): The fontsize of the plot, default is 12.
+        line (bool): If True, a 1:1 line will be plotted, default is True.
+        kde (bool): If True, a kernel density estimate will be plotted, default is True.
+        cmap (str): The colormap to use for the kde, default is 'rainbow'.
     """
     sns.set_context("paper")
 
@@ -250,19 +250,13 @@ def plot_monthly_boxplot(
 ) -> None:
     """Plot the monthly boxplot of the simulated environmental variables.
 
-    Variables:
-    - Monthly Precipitation
-    - Actual Monthly Evapotranspiration
-    - Monthly Snowmelt
-    - Monthly simulated Total Runoff
-
-    Parameters:
-    - results (pd.DataFrame): The results from the model run, make sure you have the following columns: 'Precip', 'ET', 'Snow_melt', 'Q_s', 'Q_gw'.
-    - title (str): The title of the plot, if empty, no title will be shown.
-    - output_destination (str): The path to the output file, if empty, the plot will not be saved.
-    - figsize (tuple): The size of the figure, default is (12, 12).
-    - fontsize (int): The fontsize of the plot, default is 12.
-    - palette (list): The color palette to use for the plot, default is ['#004E64', '#007A9A', '#00A5CF', '#9FFFCB'].
+    Args:
+        results (pd.DataFrame): The results from the model run, make sure you have the following columns: 'Precip', 'ET', 'Snow_melt', 'Q_s', 'Q_gw'.
+        title (str): The title of the plot, if empty, no title will be shown.
+        output_destination (str): The path to the output file, if empty, the plot will not be saved.
+        figsize (tuple): The size of the figure, default is (12, 12).
+        fontsize (int): The fontsize of the plot, default is 12.
+        palette (list): The color palette to use for the plot, default is ['#004E64', '#007A9A', '#00A5CF', '#9FFFCB']. The first color is for precipitation, the second color is for ET, the third color is for snowmelt, the fourth color is for total runoff.
     """
     sns.set_context("paper")
 
@@ -538,13 +532,13 @@ def plot_parameter_kde(
 ) -> None:
     """Plot the histogram of the parameters.
 
-    Parameters:
-    - n_fold_results (pd.DataFrame): The n_fold_results from the model calibration.
-    - bounds (dict): The bounds of the parameters. They are used to set the x-axis limits.
-    - output_destination (str): The path to the output file.
-    - figsize (tuple): The size of the figure, default is (10, 6).
-    - fontsize (int): The fontsize of the plot, default is 12.
-    - plot_type (str): The type of plot to use. Can be either 'histplot' or 'kdeplot', default is 'histplot'.
+    Args:
+        n_fold_results (pd.DataFrame): The n_fold_results from the model calibration.
+        bounds (dict): The bounds of the parameters. They are used to set the x-axis limits.
+        output_destination (str): The path to the output file.
+        figsize (tuple): The size of the figure, default is (10, 6).
+        fontsize (int): The fontsize of the plot, default is 12.
+        plot_type (str): The type of plot to use. Can be either 'histplot' or 'kdeplot', default is 'histplot'.
     """
     sns.set_context("paper")
 
@@ -648,13 +642,13 @@ def group_by_month_with_ci(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Calculate the mean and 95% confidence interval of the monthly data.
 
-    Parameters:
-    - results_df (pd.DataFrame): The results from running the BucketModel for multiple simulations.
-    - n_simulations (int): The number of simulations in the generated ensemble, default is 50.
+    Args:
+        results_df (pd.DataFrame): The results from running the BucketModel for multiple simulations.
+        n_simulations (int): The number of simulations in the generated ensemble, default is 50.
 
     Returns:
-    - monthly_mean (pd.DataFrame): The mean of the monthly data.
-    - ci (pd.DataFrame): The 95% confidence interval of the monthly data.
+        monthly_mean (pd.DataFrame): The mean of the monthly data.
+        ci (pd.DataFrame): The 95% confidence interval of the monthly data.
     """
 
     results_df = results_df.copy()
@@ -676,11 +670,11 @@ def group_by_month_with_ci(
 
 def plot_monthly_runoff_with_ci(
     results_monthly: pd.DataFrame, ci: pd.DataFrame, output_destination: str = ""
-):
+) -> None:
     """
     Plots mean monthly total runoff with 95% confidence interval and saves the plot.
 
-    Parameters:
+    Args:
         results_monthly (pd.DataFrame): DataFrame containing the monthly results with mean values.
         ci (pd.DataFrame): DataFrame containing the confidence intervals for each month.
         output_destination (str): File path to save the plot.

@@ -9,51 +9,70 @@ class BucketModel:
     """
     A class to simulate hydrological processes using a simple bucket model. These processes include: Evapotranspiration, Surface Runoff, Groundwater Runoff, Snow Accumulation, Soil Storage, Groundwater Storage, Snow Mel, Rainfall and Snowfall.
 
-    Parameters:
-    - k: Degree-day snowmelt parameter (float). [mm/°C/day]
-    - S_max: Maximum soil water storage (float). [mm]
-    - fr: Fraction of impermeable area at soil saturation (float). [fractional value]
-    - rg: Mean residence time of water in groundwater (float). [days]
-    - gauge_adj: Parameter to adjust for undercatch by rain gauge (fractional value, float). [fractional value]
+    Args:
+        k (float): Degree-day snowmelt parameter [mm/°C/day].
+        S_max (float): Maximum soil water storage [mm].
+        fr (float): Fraction of impermeable area at soil saturation [fractional value].
+        rg (float): Mean residence time of water in groundwater [days].
+        gauge_adj (float): Parameter to adjust for undercatch by rain gauge [fractional value].
 
     Attributes:
-    - S: Soil water content (initial condition, float). [mm]
-    - S_gw: Groundwater storage (initial condition, float). [mm]
-    - T_basin: Basin temperature (float). [°C]
-    - T_max: Maximum temperature (float). [°C]
-    - T_min: Minimum temperature (float). [°C]
-    - Precip: Precipitation (float). [mm]
-    - Rain: Rainfall (float). [mm]
-    - Snow: Snowfall (float). [mm]
-    - Snow_accum: Snow accumulation (cover, float). [mm]
-    - Snow_melt: Snow melt (float). [mm]
-    - PET: Potential evapotranspiration (float). [mm/day]
-    - ET: Evapotranspiration (float). [mm/day]
-    - Q_s: Surface runoff (float). [mm/day]
-    - Q_gw: Groundwater runoff (float). [mm/day]
-    - Percol: Percolation (float). [mm/day]
-    - Date: Date (pd.Timestamp). [YYYY-MM-DD]
+        S (float): Soil water content (initial condition) [mm].
+        S_gw (float): Groundwater storage (initial condition) [mm].
+        T_basin (float): Basin temperature [°C].
+        T_max (float): Maximum temperature [°C].
+        T_min (float): Minimum temperature [°C].
+        Precip (float): Precipitation [mm].
+        Rain (float): Rainfall [mm].
+        Snow (float): Snowfall [mm].
+        Snow_accum (float): Snow accumulation (cover) [mm].
+        Snow_melt (float): Snow melt [mm].
+        PET (float): Potential evapotranspiration [mm/day].
+        ET (float): Evapotranspiration [mm/day].
+        Q_s (float): Surface runoff [mm/day].
+        Q_gw (float): Groundwater runoff [mm/day].
+        Percol (float): Percolation [mm/day].
+        Date (pd.Timestamp): Date [YYYY-MM-DD].
 
     Methods:
-    - set_catchment_properties: Set the values of the constants.
-    - change_initial_conditions: Change the initial conditions of the model (not implemented).
-    - adjust_temperature: Adjust the temperature based on lapse rate and elevations.
-    - gauge_adjustment: Adjust for undercatch by the rain gauge.
-    - partition_precipitation: Partition precipitation into rainfall and snowfall.
-    - compute_snow_melt: Compute snowmelt based on basin temperature.
-    - update_snow_accum: Update snow cover based on snowfall and snowmelt.
-    - compute_julianday: Compute the Julian day based on self.Date.
-    - compute_evapotranspiration: Compute evapotranspiration using the Hamon method.
-    - surface_runoff: Compute surface runoff.
-    - percolation: Compute percolation.
-    - update_soil_moisture: Implement the water dynamics in the soil bucket.
-    - groundwater_runoff: Compute groundwater runoff with the linear reservoir concept.
-    - update_groundwater_storage: Update groundwater storage based on groundwater runoff.
-    - reset_variables: Reset the state variables to their initial values.
-    - run: Run the model with provided data.
-    - update_parameters: Update the model parameters.
-    - get_parameters: Return the model parameters.
-    - copy: Return a copy of the model.
+        set_catchment_properties(lapse_rate, station_elevation, basin_elevation, snowmelt_temp_threshold, latitude):
+            Set the values of the constants.
+        change_initial_conditions(S, S_gw):
+            Change the initial conditions of the model (not implemented).
+        adjust_temperature():
+            Adjust the temperature based on lapse rate and elevations.
+        gauge_adjustment():
+            Adjust for undercatch by the rain gauge.
+        partition_precipitation():
+            Partition precipitation into rainfall and snowfall.
+        compute_snow_melt():
+            Compute snowmelt based on basin temperature.
+        update_snow_accum():
+            Update snow cover based on snowfall and snowmelt.
+        compute_julianday():
+            Compute the Julian day based on self.Date.
+        compute_evapotranspiration():
+            Compute evapotranspiration using the Hamon method.
+        surface_runoff():
+            Compute surface runoff.
+        percolation(excess_water):
+            Compute percolation.
+        update_soil_moisture():
+            Implement the water dynamics in the soil bucket.
+        groundwater_runoff():
+            Compute groundwater runoff with the linear reservoir concept.
+        update_groundwater_storage():
+            Update groundwater storage based on groundwater runoff.
+        reset_variables():
+            Reset the state variables to their initial values.
+        run(data):
+            Run the model with provided data.
+        update_parameters(parameters):
+            Update the model parameters.
+        get_parameters():
+            Return the model parameters.
+        copy():
+            Return a copy of the model.
     """
 
     k: float
@@ -97,8 +116,8 @@ class BucketModel:
         """
         Check the validity of the model parameters.
 
-        Raises:
-        - ValueError: If any of the parameters are invalid.
+        Args:
+            ValueError: If any of the parameters are invalid.
         """
         if self.k <= 0:
             raise ValueError("k must be positive")
@@ -122,15 +141,12 @@ class BucketModel:
         """
         Set the values of the catchment properties.
 
-        Parameters:
-        - lapse_rate (float): Lapse rate (°C/m).
-        - station_elevation (float): Station elevation (m.a.s.l).
-        - basin_elevation (float): Basin elevation (m.a.s.l).
-        - snowmelt_temp_threshold (float): Snowmelt temperature threshold (°C).
-        - latitude (float): Latitude in degrees.
-
-        Returns:
-        - None
+        Args:
+            lapse_rate (float): Lapse rate (°C/m).
+            station_elevation (float): Station elevation (m.a.s.l).
+            basin_elevation (float): Basin elevation (m.a.s.l).
+            snowmelt_temp_threshold (float): Snowmelt temperature threshold (°C).
+            latitude (float): Latitude in degrees.
         """
         self.LR = lapse_rate
         self.H_STATION = station_elevation
@@ -142,13 +158,13 @@ class BucketModel:
         """
         Change the initial conditions of the model.
 
-        Parameters:
-        - S (float, optional): New initial soil water content (mm). Must be between 0 and S_max.
-        - S_gw (float, optional): New initial groundwater storage (mm). Must be non-negative.
+        Args:
+            S (float, optional): New initial soil water content (mm). Must be between 0 and S_max.
+            S_gw (float, optional): New initial groundwater storage (mm). Must be non-negative.
 
 
         Raises:
-        - ValueError: If any of the provided values are outside their valid ranges.
+            ValueError: If any of the provided values are outside their valid ranges.
         """
         if S is not None:
             if 0 <= S <= self.S_max:
@@ -172,8 +188,8 @@ class BucketModel:
         Adjust the temperature based on lapse rate and elevations.
 
         Process:
-        - Compute the mean basin temperature.
-        - Adjust the temperature based on the lapse rate and elevation differences.
+            Compute the mean basin temperature.
+            Adjust the temperature based on the lapse rate and elevation differences.
         """
         T = (self.T_max + self.T_min) / 2
         DELTA_H = self.H_STATION - self.H_BASIN
@@ -187,7 +203,7 @@ class BucketModel:
         Adjust for undercatch by the rain gauge.
 
         Process:
-        - Multiply precipitation by (1 + gauge adjustment parameter).
+            Multiply precipitation by (1 + gauge adjustment parameter).
         """
         self.Precip = self.Precip * (1 + self.gauge_adj)
 
@@ -196,9 +212,9 @@ class BucketModel:
         Partition precipitation into rainfall and snowfall based on temperature thresholds.
 
         Process:
-        - If minimum temperature is above freezing, all precipitation is rainfall.
-        - If maximum temperature is below freezing, all precipitation is snowfall.
-        - Otherwise, partition based on temperature range.
+            If minimum temperature is above freezing, all precipitation is rainfall.
+            If maximum temperature is below freezing, all precipitation is snowfall.
+            Otherwise, partition based on temperature range.
         """
         if self.T_min > 0:
             self.Rain = self.Precip
@@ -216,8 +232,8 @@ class BucketModel:
         Compute snowmelt based on basin temperature.
 
         Process:
-        - If basin temperature is below the snowmelt threshold, no snowmelt occurs.
-        - If basin temperature is above the snowmelt threshold, melt occurs as long as there is snow cover.
+            If basin temperature is below the snowmelt threshold, no snowmelt occurs.
+            If basin temperature is above the snowmelt threshold, melt occurs as long as there is snow cover.
         """
         if self.T_basin <= self.T_SM:
             self.Snow_melt = 0
@@ -229,8 +245,8 @@ class BucketModel:
         Update snow cover based on snowfall and snowmelt.
 
         Process:
-        - Add snowfall to snow accumulation.
-        - Subtract snowmelt from snow accumulation.
+            Add snowfall to snow accumulation.
+            Subtract snowmelt from snow accumulation.
         """
         self.Snow_accum += self.Snow - self.Snow_melt
 
@@ -239,7 +255,7 @@ class BucketModel:
         Compute the Julian day based on self.Date.
 
         Returns:
-        - int: Julian day (1 for January 1, ... , 365 or 366 for December 31).
+            int: Julian day (1 for January 1, ... , 365 or 366 for December 31).
         """
         return self.Date.timetuple().tm_yday
 
@@ -248,10 +264,10 @@ class BucketModel:
         Calculate potential evapotranspiration using Hamon (1961).
 
         Reference:
-        - Hamon (1961): https://ascelibrary.org/doi/10.1061/JYCEAJ.0000599
+            Hamon (1961): https://ascelibrary.org/doi/10.1061/JYCEAJ.0000599
 
         Returns:
-        - float: Potential evapotranspiration (mm/day).
+            float: Potential evapotranspiration (mm/day).
         """
         J = self.compute_julianday()
         phi = np.radians(self.LAT)
@@ -268,8 +284,8 @@ class BucketModel:
         Compute evapotranspiration using the Hamon method.
 
         Process:
-        - Calculate potential evapotranspiration (PET) using the Hamon method.
-        - Compute actual evapotranspiration (ET) based on relative soil moisture.
+            Calculate potential evapotranspiration (PET) using the Hamon method.
+            Compute actual evapotranspiration (ET) based on relative soil moisture.
         """
         self.PET = self._Hamon_PET()
         rel_soil_moisture = self.S / self.S_max
@@ -280,7 +296,7 @@ class BucketModel:
         Compute surface runoff.
 
         Process:
-        - Surface runoff is the fraction of rainfall and snowmelt based on impermeable area.
+            Surface runoff is the fraction of rainfall and snowmelt based on impermeable area.
         """
         self.Q_s = (self.Rain + self.Snow_melt) * self.fr
 
@@ -288,8 +304,8 @@ class BucketModel:
         """
         Compute percolation.
 
-        Parameters:
-        - excess_water (float): The excess water that percolates into the groundwater.
+        Args:
+            excess_water (float): The excess water that percolates into the groundwater.
         """
         self.Percol = excess_water
 
@@ -298,11 +314,11 @@ class BucketModel:
         Implement the water dynamics in the soil bucket.
 
         Process:
-        - Compute potential soil water content.
-        - If potential soil water content exceeds the maximum storage, compute surface runoff.
-        - Subtract surface runoff from potential soil water content.
-        - If potential soil water content still exceeds the maximum storage, compute percolation.
-        - Update soil water content.
+            Compute potential soil water content.
+            If potential soil water content exceeds the maximum storage, compute surface runoff.
+            Subtract surface runoff from potential soil water content.
+            If potential soil water content still exceeds the maximum storage, compute percolation.
+            Update soil water content.
         """
         potential_soil_water_content = self.S + self.Rain + self.Snow_melt - self.ET
         if potential_soil_water_content > self.S_max:
@@ -320,7 +336,7 @@ class BucketModel:
         Compute groundwater runoff with the linear reservoir concept.
 
         Note:
-        - The minimal value of rg is 1.
+            The minimal value of rg is 1.
         """
         self.Q_gw = self.S_gw / self.rg
 
@@ -329,9 +345,9 @@ class BucketModel:
         Update groundwater storage based on groundwater runoff.
 
         Process:
-        - Add percolation to groundwater storage.
-        - Subtract groundwater runoff from groundwater storage.
-        - Ensure groundwater storage is non-negative.
+            Add percolation to groundwater storage.
+            Subtract groundwater runoff from groundwater storage.
+            Ensure groundwater storage is non-negative.
         """
         self.S_gw += self.Percol - self.Q_gw
         if self.S_gw < 0:
@@ -342,7 +358,7 @@ class BucketModel:
         Reset the state variables to their initial values.
 
         Variables reset:
-        - Precip, Rain, Snow, Snow_melt, PET, ET, Q_s, Q_gw, Percol.
+            Precip, Rain, Snow, Snow_melt, PET, ET, Q_s, Q_gw, Percol.
         """
         self.Precip = 0
         self.Rain = 0
@@ -358,11 +374,11 @@ class BucketModel:
         """
         Run the model with the provided data.
 
-        Parameters:
-        - data (pd.DataFrame): DataFrame with index 'date' and columns 'P_mix', 'T_max', 'T_min'.
+        Args:
+            data (pd.DataFrame): DataFrame with index 'date' and columns 'P_mix', 'T_max', 'T_min'.
 
         Returns:
-        - pd.DataFrame: DataFrame with the simulation results.
+            pd.DataFrame: DataFrame with the simulation results.
         """
         intermediate_results = {
             "ET": [],
@@ -400,11 +416,11 @@ class BucketModel:
         """
         Update the model parameters.
 
-        Parameters:
-        - parameters (dict): A dictionary containing the parameters to update.
+        Args:
+            parameters (dict): A dictionary containing the parameters to update.
 
         Raises:
-        - ValueError: If any of the parameters are invalid.
+            ValueError: If any of the parameters are invalid.
         """
         for key, value in parameters.items():
             if hasattr(self, key):
@@ -419,7 +435,7 @@ class BucketModel:
         Return the model parameters.
 
         Returns:
-        - dict: A dictionary containing the model parameters.
+            dict: A dictionary containing the model parameters.
         """
         parameters = {
             field.name: getattr(self, field.name)
@@ -433,6 +449,6 @@ class BucketModel:
         Return a copy of the model.
 
         Returns:
-        - BucketModel: A deep copy of the model.
+            BucketModel: A deep copy of the model.
         """
         return copy.deepcopy(self)
