@@ -655,9 +655,13 @@ def group_by_month_with_ci(
     results_df["month"] = results_df.index.month
     results_df["year"] = results_df.index.year
 
-    monthly_data = (
-        results_df.groupby(["Simulation", "year", "month"]).sum().reset_index()
-    )
+    if "Simulation" in results_df.columns:
+        monthly_data = (
+            results_df.groupby(["Simulation", "year", "month"]).sum().reset_index()
+        )
+
+    else:
+        monthly_data = results_df.groupby(["year", "month"]).sum().reset_index()
 
     monthly_mean = monthly_data.groupby("month").mean()
 

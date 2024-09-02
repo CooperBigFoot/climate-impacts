@@ -106,25 +106,30 @@ def run_model_for_future_climate(
 
     return results
 
-# TODO: Add possibility to plot the results for the present climate as well
+
 def plot_climate_scenarios(
-    results: Dict[str, Dict[str, pd.DataFrame]], output_destination: str = None
+    results: Dict[str, Dict[str, pd.DataFrame]],
+    present_results: pd.DataFrame,
+    output_destination: str = None,
 ) -> None:
     """
     Plot the results of climate scenarios for different models and RCP scenarios.
 
     Args:
         results (Dict[str, Dict[str, pd.DataFrame]]): Results from run_model_for_future_climate.
+        present_results (pd.DataFrame): Monthly mean results for the present climate.
         output_destination (str, optional): Path to save the plot. If None, the plot is displayed instead.
     """
     sns.set_context("paper", font_scale=1.5)
 
+    colors = sns.color_palette("husl", n_colors=6)
+
     palette = {
-        "CLMCOM-CCLM4-ECEARTH": "blue",
-        "CLMCOM-CCLM4-HADGEM": "green",
-        "DMI-HIRHAM-ECEARTH": "red",
-        "MPICSC-REMO1-MPIESM": "purple",
-        "SMHI-RCA-IPSL": "orange",
+        "CLMCOM-CCLM4-ECEARTH": colors[0],
+        "CLMCOM-CCLM4-HADGEM": colors[1],
+        "DMI-HIRHAM-ECEARTH": colors[2],
+        "MPICSC-REMO1-MPIESM": colors[3],
+        "SMHI-RCA-IPSL": colors[4],
     }
 
     rcps = ["4.5", "8.5"]
@@ -162,6 +167,22 @@ def plot_climate_scenarios(
                 alpha=0.7,
             )
 
+    ax_precipitation.plot(
+        present_results["Precip"], color=colors[5], lw=2, linestyle="-", alpha=0.7
+    )
+
+    ax_evaporation.plot(
+        present_results["ET"], color=colors[5], lw=2, linestyle="-", alpha=0.7
+    )
+
+    ax_snowmelt.plot(
+        present_results["Snow_melt"], color=colors[5], lw=2, linestyle="-", alpha=0.7
+    )
+
+    ax_total_runoff.plot(
+        present_results["total_runoff"], color=colors[5], lw=2, linestyle="-", alpha=0.7
+    )
+
     ax_precipitation.set_title("Precipitation")
     ax_precipitation.set_ylabel("Mean monthly precipitation [mm]")
 
@@ -196,6 +217,7 @@ def plot_climate_scenarios(
     legend_elements = [
         Line2D([0], [0], color="black", lw=2, linestyle="-", label="RCP 8.5"),
         Line2D([0], [0], color="black", lw=2, linestyle="--", label="RCP 4.5"),
+        Line2D([0], [0], color=colors[5], lw=2, linestyle="-", label="Present climate"),
     ]
     for model, color in palette.items():
         legend_elements.append(
