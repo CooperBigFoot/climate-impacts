@@ -6,6 +6,7 @@ from BucketModel.data_processing import (
     run_multiple_simulations,
 )
 from BucketModel.bucket_model import BucketModel
+import os
 
 
 def combine_climate_data(

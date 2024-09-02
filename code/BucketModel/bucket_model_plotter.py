@@ -1,5 +1,6 @@
 import seaborn as sns  # For styling the plots
 import matplotlib.pyplot as plt  # For plotting
+from matplotlib.gridspec import GridSpec  # For creating subplots
 
 from scipy.stats import gaussian_kde  # For the density plot
 import numpy as np  # For the density plot
@@ -342,9 +343,14 @@ def plot_monthly_boxplot(
         fig.savefig(output_destination, dpi=300, bbox_inches="tight")
 
 
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib.gridspec import GridSpec
+
+
 def prepare_data(
     results: pd.DataFrame,
-    observed: pd.DataFrame,
     start_year: str,
     end_year: str,
     monthly: bool,
@@ -354,7 +360,6 @@ def prepare_data(
 
     Args:
         results (pd.DataFrame): The results dataframe.
-        observed (pd.DataFrame): The observed dataframe.
         start_year (str): The start year of the date range (inclusive).
         end_year (str): The end year of the date range (inclusive).
         monthly (bool): If True, the data will be resampled to monthly values, default is False.
@@ -364,35 +369,37 @@ def prepare_data(
     """
     results_filtered = filter_data_by_date(results, start_year, end_year)
     results_filtered = calculate_total_runoff(results_filtered)
-    observed_filtered = filter_data_by_date(observed, start_year, end_year)
 
     if monthly:
         results_filtered = results_filtered.resample("ME").sum()
-        observed_filtered = observed_filtered.resample("ME").sum()
 
-    return results_filtered, observed_filtered
+    return results_filtered
 
 
 def plot_runoff(
     ax: plt.Axes,
     results_filtered: pd.DataFrame,
-    observed_filtered: pd.DataFrame,
     palette: list[str],
     fontsize: int,
     monthly: bool,
-) -> tuple[plt.Line2D, plt.Line2D]:
-    (line1,) = ax.plot(
+) -> plt.Line2D:
+    """
+    Plot the simulated total runoff (Q) values.
+
+    Args:
+        ax (plt.Axes): The axis to plot on.
+        results_filtered (pd.DataFrame): The filtered results dataframe.
+        palette (list): The color palette to use for the plot.
+        fontsize (int): The fontsize of the plot.
+        monthly (bool): If True, the data will be resampled to monthly values.
+
+    Returns:
+        plt.Line2D: The line object representing the plot."""
+    (line,) = ax.plot(
         results_filtered.index,
         results_filtered["Total_Runoff"],
         color=palette[0],
         label="Simulated total runoff",
-        alpha=0.7,
-    )
-    (line2,) = ax.plot(
-        observed_filtered.index,
-        observed_filtered["Q"],
-        color=palette[1],
-        label="Observed total runoff",
         alpha=0.7,
     )
 
@@ -404,7 +411,7 @@ def plot_runoff(
     ax.tick_params(axis="y", labelsize=fontsize)
     ax.grid(color="gray", linestyle="--", linewidth=0.5, alpha=0.5)
 
-    return line1, line2
+    return line
 
 
 def plot_precipitation_ts(
@@ -414,6 +421,18 @@ def plot_precipitation_ts(
     fontsize: int,
     monthly: bool,
 ) -> plt.Line2D:
+    """
+    Plot the precipitation values.
+
+    Args:
+        ax (plt.Axes): The axis to plot on.
+        results_filtered (pd.DataFrame): The filtered results dataframe.
+        palette (list): The color palette to use for the plot.
+        fontsize (int): The fontsize of the plot.
+        monthly (bool): If True, the data will be resampled to monthly values.
+
+    Returns:
+        plt.Line2D: The line object representing the plot."""
     precip = (
         results_filtered["Precip"].resample("ME").sum()
         if monthly
@@ -423,7 +442,7 @@ def plot_precipitation_ts(
     (precip_line,) = ax.plot(
         precip.index,
         precip,
-        color=palette[2],
+        color=palette[1],
         label="Precipitation",
         linewidth=1,
     )
@@ -439,7 +458,6 @@ def plot_precipitation_ts(
 
 def plot_timeseries(
     results: pd.DataFrame,
-    observed: pd.DataFrame,
     start_year: str,
     end_year: str,
     monthly: bool = False,
@@ -448,15 +466,14 @@ def plot_timeseries(
     output_destination: str = "",
     figsize: tuple[int, int] = (10, 8),
     fontsize: int = 12,
-    palette: list = ["#007A9A", "#25A18E", "#8B4513"],
+    palette: list = ["#007A9A", "#8B4513"],
 ) -> None:
     """
-    Plot the timeseries of the observed and simulated total runoff (Q) values,
+    Plot the timeseries of the simulated total runoff (Q) values,
     with an option to include precipitation in a smaller subplot above the main plot.
 
     Args:
         results (pd.DataFrame): The results from the model run.
-        observed (pd.DataFrame): The observed data. Should contain the column 'Q' for the observed runoff.
         start_year (str): The start year of the date range (inclusive).
         end_year (str): The end year of the date range (inclusive).
         monthly (bool): If True, the data will be resampled to monthly values, default is False.
@@ -465,18 +482,12 @@ def plot_timeseries(
         output_destination (str): The path to the output file, if empty, the plot will not be saved.
         figsize (tuple): The size of the figure, default is (10, 8).
         fontsize (int): The fontsize of the plot, default is 12.
-        palette (list): The color palette to use for the plot, default is ['#007A9A', '#25A18E', '#8B4513']. The first two colors are for the runoff, the third color is for precipitation.
+        palette (list): The color palette to use for the plot, default is ['#007A9A', '#8B4513']. The first color is for runoff, the second color is for precipitation.
     """
     sns.set_context("paper")
 
-    # Ensure the palette has sufficient colors
-    if plot_precipitation and len(palette) < 3:
-        palette.append("#8B4513")
-
     # Prepare the data
-    results_filtered, observed_filtered = prepare_data(
-        results, observed, start_year, end_year, monthly
-    )
+    results_filtered = prepare_data(results, start_year, end_year, monthly)
 
     # Create figure and grid layout
     fig = plt.figure(figsize=figsize, constrained_layout=True)
@@ -484,9 +495,7 @@ def plot_timeseries(
 
     # Main plot (runoff)
     ax1 = fig.add_subplot(gs[1])
-    line1, line2 = plot_runoff(
-        ax1, results_filtered, observed_filtered, palette, fontsize, monthly
-    )
+    line = plot_runoff(ax1, results_filtered, palette, fontsize, monthly)
 
     # Precipitation plot
     if plot_precipitation:
@@ -501,7 +510,7 @@ def plot_timeseries(
     plt.suptitle(title, fontsize=fontsize + 2)
 
     # Create legend
-    handles = [line1, line2] + ([precip_line] if precip_line else [])
+    handles = [line] + ([precip_line] if precip_line else [])
     ax1.legend(
         handles=handles,
         loc="upper center",
