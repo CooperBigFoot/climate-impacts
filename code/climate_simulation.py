@@ -106,7 +106,7 @@ def run_model_for_future_climate(
 
     return results
 
-
+# TODO: Add possibility to plot the results for the present climate as well
 def plot_climate_scenarios(
     results: Dict[str, Dict[str, pd.DataFrame]], output_destination: str = None
 ):
@@ -216,63 +216,3 @@ def plot_climate_scenarios(
         plt.savefig(output_destination, dpi=300, bbox_inches="tight")
     else:
         plt.show()
-
-
-# TODO: Add possibility to plot the results for the present climate as well
-# TODO: Move to uncertainty_analysis.py (?). Make more sense to me tbh
-def combine_climate_data(
-    folder_path: str, bucket_model: BucketModel, n_simulations: int = 50
-) -> pd.DataFrame:
-    """
-    Combine climate data from multiple CSV files into a single DataFrame.
-
-    This function reads climate data from CSV files in the specified folder, runs multiple simulations,
-    and combines the results into a single DataFrame with annual mean streamflow, climate model, and scenario.
-
-    Args:
-        folder_path (str): Path to the folder containing the climate data CSV files.
-
-    Returns:
-        pd.DataFrame: Combined DataFrame with columns for 'Simulation', 'Year', 'Streamflow', 'Climate_Model', and 'Scenario'.
-    """
-    combined_data = []
-    csv_files = [f for f in os.listdir(folder_path) if f.endswith(".csv")]
-
-    for filename in csv_files:
-        try:
-            file_path = os.path.join(folder_path, filename)
-            df = pd.read_csv(file_path)
-            future_data = preprocess_for_bucket_model(df)
-            future_streamflow = run_multiple_simulations(
-                future_data, bucket_model, n_simulations=n_simulations
-            )
-            future_streamflow["Streamflow"] = (
-                future_streamflow["Q_s"] + future_streamflow["Q_gw"]
-            )
-            future_streamflow["Year"] = future_streamflow.index.year
-
-            # Extract model and scenario from filename
-            model, scenario = filename.rsplit("_", 2)[-2:]
-            model = model.replace("-", "_")
-            scenario = os.path.splitext(scenario)[0]
-
-            annual_totals = (
-                future_streamflow.groupby(["Simulation", "Year"])["Streamflow"]
-                .sum()
-                .reset_index()
-            )
-
-            annual_mean = (
-                annual_totals.groupby(["Simulation"])["Streamflow"].mean().reset_index()
-            )
-            annual_mean["Climate_Model"] = model
-            annual_mean["Scenario"] = scenario
-
-            combined_data.append(annual_mean)
-        except Exception as e:
-            print(f"Error processing {filename}: {e}")
-
-    if combined_data:
-        return pd.concat(combined_data, ignore_index=True)
-    else:
-        return pd.DataFrame()  # Return an empty DataFrame if no data was processed
