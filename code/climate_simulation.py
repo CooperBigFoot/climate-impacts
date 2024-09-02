@@ -248,7 +248,7 @@ def plot_climate_scenarios(
         present_results (pd.DataFrame): A pandas DataFrame containing monthly mean results for 
             the present climate.
         output_destination (str, optional): If provided, the path where the plot will be saved. 
-            If None, the plot will be displayed instead.
+            If None, the plot will only be displayed.
     """
     sns.set_context("paper", font_scale=1.5)
     palette = generate_color_palette()
