@@ -241,11 +241,13 @@ def plot_climate_scenarios(
     climate models and RCP scenarios, as well as the present climate.
 
     Args:
-        results: A nested dictionary containing the results from run_model_for_future_climate.
-            The outer dictionary keys are RCP scenarios ("4.5" and "8.5"), and the inner
-            dictionary keys are model names. Values are pandas DataFrames with monthly data.
-        present_results: A pandas DataFrame containing monthly mean results for the present climate.
-        output_destination: If provided, the path where the plot will be saved.
+        results (Dict[str, Dict[str, pd.DataFrame]]): A nested dictionary containing the results 
+            from run_model_for_future_climate. The outer dictionary keys are RCP scenarios 
+            ("4.5" and "8.5"), and the inner dictionary keys are model names. Values are pandas 
+            DataFrames with monthly data.
+        present_results (pd.DataFrame): A pandas DataFrame containing monthly mean results for 
+            the present climate.
+        output_destination (str, optional): If provided, the path where the plot will be saved. 
             If None, the plot will be displayed instead.
     """
     sns.set_context("paper", font_scale=1.5)
