@@ -91,7 +91,15 @@ class UncertaintyAnalysis:
         return round(tu, 2)
 
     def calculate_eu(self, column: str, tu: float) -> Tuple[float, float]:
-        """Calculate Emission Scenario Uncertainty (EU) and its partition."""
+        """Calculate Emission Scenario Uncertainty (EU) and its partition.
+        
+        Args:
+            column (str): The column name.
+            tu (float): Total Uncertainty value.
+            
+        Returns:
+            Tuple[float, float]: Emission Scenario Uncertainty and its partition.
+        """
         scenario_medians = self.data.groupby("Scenario")[column].median()
         eu = abs(scenario_medians["RCP8.5"] - scenario_medians["RCP4.5"])
         partition = eu / tu
