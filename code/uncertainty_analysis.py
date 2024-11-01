@@ -92,11 +92,11 @@ class UncertaintyAnalysis:
 
     def calculate_eu(self, column: str, tu: float) -> Tuple[float, float]:
         """Calculate Emission Scenario Uncertainty (EU) and its partition.
-        
+
         Args:
             column (str): The column name.
             tu (float): Total Uncertainty value.
-            
+
         Returns:
             Tuple[float, float]: Emission Scenario Uncertainty and its partition.
         """
